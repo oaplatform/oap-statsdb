@@ -48,6 +48,17 @@ public class StatsDBTest extends AbstractMongoTest {
     private static final KeySchema schema3 = new KeySchema("n1", "n2", "n3");
 
     @Test
+    public void testEmptySync() {
+        try (var master = new StatsDBMaster(schema3, StatsDBStorage.NULL);
+             var node = new StatsDBNode(schema3, getProxy(master), null)) {
+
+            assertThat(node.lastSyncSuccess).isFalse();
+            node.sync();
+            assertThat(node.lastSyncSuccess).isTrue();
+        }
+    }
+
+    @Test
     public void children() {
         try (var master = new StatsDBMaster(schema2, StatsDBStorage.NULL)) {
             master.update("k1", "k2", c -> c.ci = 10, MockChild::new);

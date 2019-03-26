@@ -75,7 +75,10 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
             if (!snapshot.isEmpty()) {
                 sync = new Sync(snapshot, cuid.next());
                 saveToFile();
-            } else return;
+            } else {
+                lastSyncSuccess = true;
+                return;
+            }
         }
 
         try {
