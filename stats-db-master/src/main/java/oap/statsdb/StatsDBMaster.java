@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable {
+public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, Runnable {
     private final ConcurrentHashMap<String, String> hosts = new ConcurrentHashMap<>();
     private final StatsDBStorage storage;
 
@@ -130,6 +130,11 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable {
 
     @Override
     public void close() {
+        storage.store(schema, db);
+    }
+
+    @Override
+    public void run() {
         storage.store(schema, db);
     }
 }
