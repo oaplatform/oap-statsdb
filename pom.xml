@@ -41,6 +41,13 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>oap</id>
+            <url>https://mvn.oaplatform.org/</url>
+        </repository>
+    </distributionManagement>
+
     <modules>
         <module>stats-db</module>
         <module>stats-db-master</module>
