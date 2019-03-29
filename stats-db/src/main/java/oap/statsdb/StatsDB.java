@@ -151,45 +151,56 @@ public abstract class StatsDB {
     @SuppressWarnings("unchecked")
     public <T1 extends Node.Value<T1>, T2 extends Node.Value<T2>> Stream<Select2<T1, T2>> select2() {
         return
-                db.values().stream()
-                        .flatMap(n1 -> n1.db.values().stream().map(
-                                n2 -> new Select2<>((T1) n1.v, (T2) n2.v)));
+                db.entrySet().stream()
+                        .flatMap(e1 -> e1.getValue().db.entrySet().stream().map(
+                                e2 -> new Select2<>(e1.getKey(), (T1) e1.getValue().v, e2.getKey(), (T2) e2.getValue().v)));
     }
 
     @SuppressWarnings("unchecked")
     public <T1 extends Node.Value<T1>, T2 extends Node.Value<T2>, T3 extends Node.Value<T3>> Stream<Select3<T1, T2, T3>> select3() {
         return
-                db.values().stream()
-                        .flatMap(n1 -> n1.db.values().stream().flatMap(
-                                n2 -> n2.db.values().stream().map(
-                                        n3 -> new Select3<>((T1) n1.v, (T2) n2.v, (T3) n3.v))));
+                db.entrySet().stream()
+                        .flatMap(e1 -> e1.getValue().db.entrySet().stream().flatMap(
+                                e2 -> e2.getValue().db.entrySet().stream().map(
+                                        e3 -> new Select3<>(e1.getKey(), (T1) e1.getValue().v,
+                                                e2.getKey(), (T2) e2.getValue().v,
+                                                e3.getKey(), (T3) e3.getValue().v))));
     }
 
     @SuppressWarnings("unchecked")
     public <T1 extends Node.Value<T1>, T2 extends Node.Value<T2>, T3 extends Node.Value<T3>, T4 extends Node.Value<T4>> Stream<Select4<T1, T2, T3, T4>> select4() {
         return
-                db.values().stream()
-                        .flatMap(n1 -> n1.db.values().stream().flatMap(
-                                n2 -> n2.db.values().stream().flatMap(
-                                        n3 -> n3.db.values().stream().map(
-                                                n4 -> new Select4<>((T1) n1.v, (T2) n2.v, (T3) n3.v, (T4) n4.v)))));
+                db.entrySet().stream()
+                        .flatMap(e1 -> e1.getValue().db.entrySet().stream().flatMap(
+                                e2 -> e2.getValue().db.entrySet().stream().flatMap(
+                                        e3 -> e3.getValue().db.entrySet().stream().map(
+                                                e4 -> new Select4<>(e1.getKey(), (T1) e1.getValue().v,
+                                                        e2.getKey(), (T2) e2.getValue().v,
+                                                        e3.getKey(), (T3) e3.getValue().v,
+                                                        e4.getKey(), (T4) e4.getValue().v)))));
     }
 
     @SuppressWarnings("unchecked")
     public <T1 extends Node.Value<T1>, T2 extends Node.Value<T2>, T3 extends Node.Value<T3>, T4 extends Node.Value<T4>, T5 extends Node.Value<T5>> Stream<Select5<T1, T2, T3, T4, T5>> select5() {
         return
-                db.values().stream()
-                        .flatMap(n1 -> n1.db.values().stream().flatMap(
-                                n2 -> n2.db.values().stream().flatMap(
-                                        n3 -> n3.db.values().stream().flatMap(
-                                                n4 -> n4.db.values().stream().map(
-                                                        n5 -> new Select5<>((T1) n1.v, (T2) n2.v, (T3) n3.v, (T4) n4.v, (T5) n5.v))))));
+                db.entrySet().stream()
+                        .flatMap(e1 -> e1.getValue().db.entrySet().stream().flatMap(
+                                e2 -> e2.getValue().db.entrySet().stream().flatMap(
+                                        e3 -> e3.getValue().db.entrySet().stream().flatMap(
+                                                e4 -> e4.getValue().db.entrySet().stream().map(
+                                                        e5 -> new Select5<>(e1.getKey(), (T1) e1.getValue().v,
+                                                                e2.getKey(), (T2) e2.getValue().v,
+                                                                e3.getKey(), (T3) e3.getValue().v,
+                                                                e4.getKey(), (T4) e4.getValue().v,
+                                                                e5.getKey(), (T5) e5.getValue().v))))));
     }
 
     @ToString
     @AllArgsConstructor
     public static class Select2<T1 extends Node.Value<T1>, T2 extends Node.Value<T2>> {
+        public final String id1;
         public final T1 v1;
+        public final String id2;
         public final T2 v2;
     }
 
@@ -198,8 +209,11 @@ public abstract class StatsDB {
     public static class Select3<T1 extends Node.Value<T1>, T2 extends Node.Value<T2>, T3 extends Node.Value<T3>> implements Serializable {
         private static final long serialVersionUID = 3812951337765151702L;
 
+        public final String id1;
         public final T1 v1;
+        public final String id2;
         public final T2 v2;
+        public final String id3;
         public final T3 v3;
     }
 
@@ -208,9 +222,13 @@ public abstract class StatsDB {
     public static class Select4<T1 extends Node.Value<T1>, T2 extends Node.Value<T2>, T3 extends Node.Value<T3>, T4 extends Node.Value<T4>> implements Serializable {
         private static final long serialVersionUID = 7466796137360157099L;
 
+        public final String id1;
         public final T1 v1;
+        public final String id2;
         public final T2 v2;
+        public final String id3;
         public final T3 v3;
+        public final String id4;
         public final T4 v4;
     }
 
@@ -219,10 +237,15 @@ public abstract class StatsDB {
     public static class Select5<T1 extends Node.Value<T1>, T2 extends Node.Value<T2>, T3 extends Node.Value<T3>, T4 extends Node.Value<T4>, T5 extends Node.Value<T5>> implements Serializable {
         private static final long serialVersionUID = -8184723490764842795L;
 
+        public final String id1;
         public final T1 v1;
+        public final String id2;
         public final T2 v2;
+        public final String id3;
         public final T3 v3;
+        public final String id4;
         public final T4 v4;
+        public final String id5;
         public final T5 v5;
     }
 }

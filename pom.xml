@@ -31,7 +31,7 @@
     <name>oap-stats-db-parent</name>
     <artifactId>oap-stats-db-parent</artifactId>
     <groupId>oap</groupId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>pom</packaging>
 
     <repositories>
