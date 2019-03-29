@@ -29,10 +29,10 @@ import java.util.function.Function;
 
 public class MockRemoteStatsDB implements RemoteStatsDB {
     public final ArrayList<Sync> syncs = new ArrayList<>();
-    private final KeySchema schema;
+    private final NodeSchema schema;
     private Function<Sync, RuntimeException> exceptionFunc;
 
-    public MockRemoteStatsDB( KeySchema schema ) {
+    public MockRemoteStatsDB( NodeSchema schema ) {
         this.schema = schema;
     }
 

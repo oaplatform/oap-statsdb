@@ -48,11 +48,11 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
     protected boolean lastSyncSuccess = false;
     volatile Sync sync = null;
 
-    public StatsDBNode(KeySchema schema, RemoteStatsDB master, Path directory) {
+    public StatsDBNode(NodeSchema schema, RemoteStatsDB master, Path directory) {
         this(schema, master, directory, Cuid.UNIQUE);
     }
 
-    public StatsDBNode(KeySchema schema, RemoteStatsDB master, Path directory, Cuid cuid) {
+    public StatsDBNode(NodeSchema schema, RemoteStatsDB master, Path directory, Cuid cuid) {
         super(schema);
         this.directory = directory;
         this.master = master;

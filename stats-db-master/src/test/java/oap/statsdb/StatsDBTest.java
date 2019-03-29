@@ -35,17 +35,21 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
+import static oap.statsdb.NodeSchema.nc;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by igor.petrenko on 08.09.2017.
- *
- * @todo by some reason it fails every second run
  */
 @Test
 public class StatsDBTest extends AbstractMongoTest {
-    private static final KeySchema schema2 = new KeySchema("n1", "n2");
-    private static final KeySchema schema3 = new KeySchema("n1", "n2", "n3");
+    private static final NodeSchema schema2 = new NodeSchema(
+            nc("n1", MockValue::new),
+            nc("n2", MockChild::new));
+    private static final NodeSchema schema3 = new NodeSchema(
+            nc("n1", MockValue::new),
+            nc("n2", MockChild::new),
+            nc("n3", MockChild::new));
 
     @Test
     public void testEmptySync() {
@@ -61,10 +65,10 @@ public class StatsDBTest extends AbstractMongoTest {
     @Test
     public void children() {
         try (var master = new StatsDBMaster(schema2, StatsDBStorage.NULL)) {
-            master.update("k1", "k2", c -> c.ci = 10, MockChild::new);
-            master.update("k1", "k3", c -> c.ci = 3, MockChild::new);
-            master.update("k2", "k4", c -> c.ci = 4, MockChild::new);
-            master.update("k1", c -> c.i2 = 10, MockValue::new);
+            master.<MockChild>update("k1", "k2", c -> c.ci = 10);
+            master.<MockChild>update("k1", "k3", c -> c.ci = 3);
+            master.<MockChild>update("k2", "k4", c -> c.ci = 4);
+            master.<MockValue>update("k1", c -> c.i2 = 10);
 
 
             assertThat(master.children("k1"))
@@ -86,32 +90,25 @@ public class StatsDBTest extends AbstractMongoTest {
         try (var master = new StatsDBMaster(schema3, StatsDBStorage.NULL);
              var node = new StatsDBNode(schema3, getProxy(master), null)) {
 
-            node.update("p", (p) -> {
-            }, () -> new MockValue(1));
-            node.update("p", "c1", c -> {
-            }, () -> new MockChild(1));
-            node.update("p", "c1", "c2", c -> {
-            }, () -> new MockChild(2));
+            node.<MockValue>update("p", (p) -> p.i2 = 1);
+            node.<MockChild>update("p", "c1", c -> c.ci = 1);
+            node.<MockChild>update("p", "c1", "c2", c -> c.ci = 2);
             node.sync();
 
             assertThat(master.<MockValue>get("p").sum).isEqualTo(3);
 
-            node.update("p", (p) -> {
-            }, () -> new MockValue(1));
-            node.update("p", "c1", "c2", "c3", c -> {
-            }, () -> new MockChild(2));
+            node.<MockValue>update("p", p -> p.i2 = 1);
+            node.<MockChild>update("p", "c1", c -> c.ci = 2);
             node.sync();
 
-            node.update("p", "c1", "c2", c -> {
-            }, () -> new MockChild(2));
+            node.<MockChild>update("p", "c1", "c2", c -> c.ci = 2);
             node.sync();
 
             assertThat(master.<MockValue>get("p").i2).isEqualTo(2);
-            assertThat(master.<MockValue>get("p").sum).isEqualTo(5);
-            assertThat(master.<MockChild>get("p", "c1").ci).isEqualTo(1);
+            assertThat(master.<MockValue>get("p").sum).isEqualTo(7);
+            assertThat(master.<MockChild>get("p", "c1").ci).isEqualTo(3);
             assertThat(master.<MockChild>get("p", "c1").sum).isEqualTo(4);
             assertThat(master.<MockChild>get("p", "c1", "c2").ci).isEqualTo(4);
-            assertThat(master.<MockChild>get("p", "c1", "c2", "c3").ci).isEqualTo(2);
         }
     }
 
@@ -123,16 +120,15 @@ public class StatsDBTest extends AbstractMongoTest {
     @Test
     public void persistMaster() {
         try (var masterStorage = new StatsDBStorageMongo(mongoClient, "test");
-             StatsDBMaster master = new StatsDBMaster(schema2, masterStorage)) {
-            master.update("k1", "k2", c -> c.ci = 10, MockChild::new);
-            master.update("k1", "k3", c -> c.ci = 1, MockChild::new);
-            master.update("k1", c -> c.i2 = 20, MockValue::new);
+             StatsDBMaster master = new StatsDBMaster(schema3, masterStorage)) {
+            master.<MockChild>update("k1", "k2", "k3", c -> c.ci = 10);
+            master.<MockChild>update("k1", "k2", "k33", c -> c.ci = 1);
+            master.<MockValue>update("k1", c -> c.i2 = 111);
         }
 
         try (var masterStorage = new StatsDBStorageMongo(mongoClient, "test");
-             StatsDBMaster master = new StatsDBMaster(schema2, masterStorage)) {
-            assertThat(master.<MockChild>get("k1", "k2").ci).isEqualTo(10);
-            assertThat(master.<MockValue>get("k1").i2).isEqualTo(20);
+             StatsDBMaster master = new StatsDBMaster(schema3, masterStorage)) {
+            assertThat(master.<MockChild>get("k1", "k2", "k3").ci).isEqualTo(10);
 
             assertThat(master.<MockValue>get("k1").sum).isEqualTo(11L);
         }
@@ -144,7 +140,7 @@ public class StatsDBTest extends AbstractMongoTest {
         master.syncWithException((sync) -> new RuntimeException("sync"));
 
         try (var node = new StatsDBNode(schema2, getProxy(master), Env.tmpPath("node"))) {
-            node.update("k1", "k2", c -> c.i2 = 10, MockValue::new);
+            node.<MockChild>update("k1", "k2", c -> c.ci = 10);
         }
 
         master.syncWithoutException();
@@ -162,17 +158,17 @@ public class StatsDBTest extends AbstractMongoTest {
              var node = new StatsDBNode(schema2, getProxy(master), null)) {
             node.sync();
 
-            node.update("k1", "k2", c -> c.ci = 10, MockChild::new);
-            node.update("k1", "k3", c -> c.ci = 1, MockChild::new);
-            node.update("k1", c -> c.i2 = 20, MockValue::new);
+            node.<MockChild>update("k1", "k2", c -> c.ci = 10);
+            node.<MockChild>update("k1", "k3", c -> c.ci = 1);
+            node.<MockValue>update("k1", c -> c.i2 = 20);
 
             node.sync();
             assertThat(node.<MockValue>get("k1", "k2")).isNull();
             assertThat(master.<MockChild>get("k1", "k2").ci).isEqualTo(10);
             assertThat(master.<MockValue>get("k1").i2).isEqualTo(20);
 
-            node.update("k1", "k2", c -> c.ci = 10, MockChild::new);
-            node.update("k1", c -> c.i2 = 21, () -> new MockValue(21));
+            node.<MockChild>update("k1", "k2", c -> c.ci = 10);
+            node.<MockValue>update("k1", c -> c.i2 = 21);
 
             node.sync();
             assertThat(node.<MockValue>get("k1", "k2")).isNull();
@@ -187,9 +183,9 @@ public class StatsDBTest extends AbstractMongoTest {
 
         try (var master = new StatsDBMaster(schema2, StatsDBStorage.NULL);
              var node = new StatsDBNode(schema2, getProxy(master), null)) {
-            node.update("k1", "k2", c -> c.ci = 10, MockChild::new);
-            node.update("k1", "k3", c -> c.ci = 1, MockChild::new);
-            node.update("k1", c -> c.i2 = 20, MockValue::new);
+            node.<MockChild>update("k1", "k2", c -> c.ci = 10);
+            node.<MockChild>update("k1", "k3", c -> c.ci = 1);
+            node.<MockValue>update("k1", c -> c.i2 = 20);
             node.sync();
 
             assertThat(master.<MockValue>get("k1").sum).isEqualTo(11L);
@@ -202,7 +198,7 @@ public class StatsDBTest extends AbstractMongoTest {
 
         try (var node = new StatsDBNode(schema2, getProxy(master), Env.tmpPath("node"))) {
             master.syncWithException((sync) -> new RuntimeException("sync"));
-            node.update("k1", "k2", c -> c.i2 = 10, MockValue::new);
+            node.<MockChild>update("k1", "k2", c -> c.ci = 10);
             node.sync();
             assertThat(node.<MockValue>get("k1", "k2")).isNull();
         }
@@ -227,12 +223,12 @@ public class StatsDBTest extends AbstractMongoTest {
 
             uid.reset(0);
 
-            node.update("k1", c -> c.i2 = 20, MockValue::new);
+            node.<MockValue>update("k1", c -> c.i2 = 20);
             node.sync();
             assertThat(master.<MockValue>get("k1").i2).isEqualTo(20);
 
             uid.reset(0);
-            node.update("k1", c -> c.i2 = 21, MockValue::new);
+            node.<MockValue>update("k1", c -> c.i2 = 21);
             node.sync();
             assertThat(master.<MockValue>get("k1").i2).isEqualTo(20);
         }
@@ -293,7 +289,7 @@ public class StatsDBTest extends AbstractMongoTest {
 
         @Override
         public MockChild aggregate(List<MockChild> children) {
-            sum = children.stream().mapToLong(c -> c.ci).sum();
+            sum = children.stream().mapToLong(c -> c.ci + c.sum).sum();
             return this;
         }
     }

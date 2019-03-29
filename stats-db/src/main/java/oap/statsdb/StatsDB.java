@@ -24,7 +24,6 @@
 
 package oap.statsdb;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -33,17 +32,16 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public abstract class StatsDB {
-    protected final KeySchema schema;
+    protected final NodeSchema schema;
     protected volatile ConcurrentHashMap<String, Node> db = new ConcurrentHashMap<>();
 
-    public StatsDB(KeySchema schema) {
+    public StatsDB(NodeSchema schema) {
         this.schema = schema;
     }
 
@@ -63,39 +61,39 @@ public abstract class StatsDB {
         }
     }
 
-    protected <V extends Node.Value<V>> void update(String[] key, Consumer<V> update, Supplier<V> create) {
+    protected <V extends Node.Value<V>> void update(String[] key, Consumer<V> update) {
         assert key != null;
         assert key.length > 0;
 
         var rootKey = key[0];
 
-        var node = db.computeIfAbsent(rootKey, rk -> new Node());
-        updateNode(key, update, create, node, schema);
+        var node = db.computeIfAbsent(rootKey, rk -> new Node(schema.get(0).newInstance.get()));
+        updateNode(key, update, node, schema);
     }
 
     protected <V extends Node.Value<V>>
-    void update(String key1, Consumer<V> update, Supplier<V> create) {
-        update(new String[]{key1}, update, create);
+    void update(String key1, Consumer<V> update) {
+        update(new String[]{key1}, update);
     }
 
     protected <V extends Node.Value<V>>
-    void update(String key1, String key2, Consumer<V> update, Supplier<V> create) {
-        update(new String[]{key1, key2}, update, create);
+    void update(String key1, String key2, Consumer<V> update) {
+        update(new String[]{key1, key2}, update);
     }
 
     protected <V extends Node.Value<V>>
-    void update(String key1, String key2, String key3, Consumer<V> update, Supplier<V> create) {
-        update(new String[]{key1, key2, key3}, update, create);
+    void update(String key1, String key2, String key3, Consumer<V> update) {
+        update(new String[]{key1, key2, key3}, update);
     }
 
     protected <V extends Node.Value<V>>
-    void update(String key1, String key2, String key3, String key4, Consumer<V> update, Supplier<V> create) {
-        update(new String[]{key1, key2, key3, key4}, update, create);
+    void update(String key1, String key2, String key3, String key4, Consumer<V> update) {
+        update(new String[]{key1, key2, key3, key4}, update);
     }
 
     protected <V extends Node.Value<V>>
-    void update(String key1, String key2, String key3, String key4, String key5, Consumer<V> update, Supplier<V> create) {
-        update(new String[]{key1, key2, key3, key4, key5}, update, create);
+    void update(String key1, String key2, String key3, String key4, String key5, Consumer<V> update) {
+        update(new String[]{key1, key2, key3, key4, key5}, update);
     }
 
     @SuppressWarnings("unchecked")
@@ -132,15 +130,16 @@ public abstract class StatsDB {
     }
 
     public <N extends Node, V extends Node.Value<V>> N updateNode(
-            String[] key, Consumer<V> update, Supplier<V> create, N node, KeySchema schema) {
+            String[] key, Consumer<V> update, N node, NodeSchema schema) {
         Node tNode = node;
 
         for (int i = 1; i < key.length; i++) {
             var keyItem = key[i];
-            tNode = tNode.db.computeIfAbsent(keyItem, (k) -> new Node());
+            var finalI = i;
+            tNode = tNode.db.computeIfAbsent(keyItem, (k) -> new Node(schema.get(finalI).newInstance.get()));
         }
 
-        tNode.updateValue(update, create);
+        tNode.updateValue(update);
 
         return node;
     }

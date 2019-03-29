@@ -24,26 +24,46 @@
 
 package oap.statsdb;
 
+import com.google.common.base.Preconditions;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
 
 @ToString(callSuper = true)
-public class KeySchema extends ArrayList<String> implements Serializable {
-    private static final long serialVersionUID = 5960753080754091696L;
+public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> {
+    private final HashMap<String, Supplier<Node.Value>> cons = new HashMap<>();
 
-    public KeySchema() {
+    public NodeSchema() {
     }
 
-    public KeySchema( String... key ) {
-        this( asList( key ) );
+    public NodeSchema(NodeConfiguration... confs) {
+        this(asList(confs));
     }
 
-    public KeySchema( List<String> keys ) {
-        super( keys );
+    public NodeSchema(List<NodeConfiguration> confs) {
+        super(confs);
+        for (var c : confs) {
+            cons.put(c.key, c.newInstance);
+        }
+    }
+
+    public static NodeConfiguration nc(String key, Supplier<Node.Value> newInstance) {
+        return new NodeConfiguration(key, newInstance);
+    }
+
+    @ToString
+    public static class NodeConfiguration {
+        public final String key;
+        public final Supplier<Node.Value> newInstance;
+
+        public NodeConfiguration(String key, Supplier<Node.Value> newInstance) {
+            this.key = key;
+            this.newInstance = newInstance;
+        }
     }
 }

@@ -39,7 +39,7 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
     private final ConcurrentHashMap<String, String> hosts = new ConcurrentHashMap<>();
     private final StatsDBStorage storage;
 
-    public StatsDBMaster(KeySchema schema, StatsDBStorage storage) {
+    public StatsDBMaster(NodeSchema schema, StatsDBStorage storage) {
         super(schema);
         this.storage = storage;
 
@@ -47,21 +47,8 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
         init(db.values());
     }
 
-    private static List<List<String>> merge(Map<String, Node> masterDB, Map<String, Node> remoteDB, List<List<String>> retList) {
-        for (var entry : remoteDB.entrySet()) {
-            var key = entry.getKey();
-            var rNode = entry.getValue();
-
-            var masterNode = masterDB.computeIfAbsent(key, (k) -> new Node());
-
-            merge(key, masterNode, rNode, retList);
-        }
-
-        return retList;
-    }
-
-    private static void merge(String key, Node masterNode, Node rNode, List<List<String>> retList) {
-        var list = merge(masterNode.db, rNode.db, retList);
+    private void merge(String key, Node masterNode, Node rNode, List<List<String>> retList, int level) {
+        var list = merge(masterNode.db, rNode.db, retList, level);
         list.forEach(l -> l.add(0, key));
 
         retList.addAll(list);
@@ -74,14 +61,27 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
         }
     }
 
-    private List<List<String>> merge(Map<String, Node> remoteDB) {
+    private List<List<String>> merge(Map<String, Node> masterDB, Map<String, Node> remoteDB, List<List<String>> retList, int level) {
+        for (var entry : remoteDB.entrySet()) {
+            var key = entry.getKey();
+            var rNode = entry.getValue();
+
+            var masterNode = masterDB.computeIfAbsent(key, (k) -> new Node(schema.get(level).newInstance.get()));
+
+            merge(key, masterNode, rNode, retList, level);
+        }
+
+        return retList;
+    }
+
+    private List<List<String>> merge(Map<String, Node> remoteDB, int level) {
         assert remoteDB != null;
 
         var retList = new ArrayList<List<String>>();
 
         remoteDB.forEach((key, rnode) -> {
-            var mnode = db.computeIfAbsent(key, k -> new Node());
-            merge(key, mnode, rnode, retList);
+            var mnode = db.computeIfAbsent(key, k -> new Node(schema.get(level).newInstance.get()));
+            merge(key, mnode, rnode, retList, level + 1);
             updateAggregates(mnode);
         });
 
@@ -112,7 +112,7 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
 
             hosts.put(host, sync.id);
 
-            var failedKeys = merge(sync.data);
+            var failedKeys = merge(sync.data, 0);
 
             if (!failedKeys.isEmpty()) {
                 log.error("failed keys:");

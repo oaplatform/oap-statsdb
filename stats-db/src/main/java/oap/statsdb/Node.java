@@ -40,7 +40,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @EqualsAndHashCode
 @ToString
@@ -56,18 +55,19 @@ public class Node implements Serializable {
     public long ct;
     public long mt;
 
-    public Node() {
-        this(DateTimeUtils.currentTimeMillis());
+    public Node(Value v) {
+        this(DateTimeUtils.currentTimeMillis(), v);
     }
 
     @JsonCreator
-    public Node(long ct) {
+    public Node(long ct, Value v) {
         this.mt = this.ct = ct;
+        this.v = v;
     }
 
     @SuppressWarnings("unchecked")
-    synchronized <V extends Value<V>> void updateValue(Consumer<V> update, Supplier<V> create) {
-        if (v == null) v = create.get();
+    synchronized <V extends Value<V>> void updateValue(Consumer<V> update) {
+        assert v != null;
         update.accept((V) v);
         this.mt = DateTimeUtils.currentTimeMillis();
     }

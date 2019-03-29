@@ -9,12 +9,12 @@ import static java.util.Collections.emptyMap;
  */
 public class StatsDBStorageNull implements StatsDBStorage {
     @Override
-    public Map<String, Node> load(KeySchema schema) {
+    public Map<String, Node> load(NodeSchema schema) {
         return emptyMap();
     }
 
     @Override
-    public void store(KeySchema schema, Map<String, Node> db) {
+    public void store(NodeSchema schema, Map<String, Node> db) {
 
     }
 }

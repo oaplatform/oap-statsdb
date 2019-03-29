@@ -13,6 +13,7 @@ import org.joda.time.DateTimeUtils;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -24,14 +25,11 @@ import static oap.storage.mongo.MongoStorage.UPDATE_OPTIONS_UPSERT;
  */
 @Slf4j
 public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
-    private final MongoClient mongoClient;
     private final MongoCollection<MongoNode> collection;
     public int bulkSize = 1000;
     private long lastFsync = -1;
 
     public StatsDBStorageMongo(MongoClient mongoClient, String table) {
-        this.mongoClient = mongoClient;
-
         var ref = new TypeRef<MongoNode>() {
         };
 
@@ -47,7 +45,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
     }
 
     @Override
-    public Map<String, Node> load(KeySchema schema) {
+    public Map<String, Node> load(NodeSchema schema) {
         log.debug("load {}", schema);
         final Map<String, Node> db = new HashMap<>();
 
@@ -56,11 +54,12 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
 
             var cdb = db;
             for (int i = 0; i < node._id.size() - 1; i++) {
-                var key = node._id.get(schema.get(i));
-                cdb = cdb.computeIfAbsent(key, k -> new Node()).db;
+                var nc = schema.get(i);
+                var key = node._id.get(nc.key);
+                cdb = cdb.computeIfAbsent(key, k -> new Node(nc.newInstance.get())).db;
             }
 
-            var lastId = node._id.get(schema.get(node._id.size() - 1));
+            var lastId = node._id.get(schema.get(node._id.size() - 1).key);
             var lastNode = cdb.get(lastId);
             if (lastNode == null) {
                 cdb.put(lastId, node.n);
@@ -78,7 +77,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
     }
 
     @Override
-    public void store(KeySchema schema, Map<String, Node> db) {
+    public void store(NodeSchema schema, Map<String, Node> db) {
         log.debug("store {}", schema);
         var count = 0;
 
@@ -96,7 +95,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
         log.info("[{}] fsync modified: {}", collection.getNamespace(), count);
     }
 
-    private int store(KeySchema schema, int index, Map<String, String> id,
+    private int store(NodeSchema schema, int index, Map<String, String> id,
                       Map<String, Node> db, ArrayList<WriteModel<MongoNode>> bulk) {
         if (db.isEmpty()) return 0;
 
@@ -106,7 +105,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
 
         db.forEach((key, value) -> {
             var newId = new HashMap<>(id);
-            newId.put(schema.get(index), key);
+            newId.put(schema.get(index).key, key);
 
             if (value.mt >= lastFsync) {
                 bulk.add(new ReplaceOneModel<>(eq("_id", newId), new MongoNode(newId, value), UPDATE_OPTIONS_UPSERT));
@@ -125,5 +124,9 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
 
     @Override
     public void close() {
+    }
+
+    public void insertMany(List<MongoNode> stats) {
+        collection.insertMany(stats);
     }
 }
