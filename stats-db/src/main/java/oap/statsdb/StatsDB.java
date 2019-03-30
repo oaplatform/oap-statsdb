@@ -67,7 +67,7 @@ public abstract class StatsDB {
 
         var rootKey = key[0];
 
-        var node = db.computeIfAbsent(rootKey, rk -> new Node(schema.get(0).newInstance.get()));
+        var node = db.computeIfAbsent(rootKey, rk -> new Node(schema.get(0).newInstance()));
         updateNode(key, update, node, schema);
     }
 
@@ -136,7 +136,7 @@ public abstract class StatsDB {
         for (int i = 1; i < key.length; i++) {
             var keyItem = key[i];
             var finalI = i;
-            tNode = tNode.db.computeIfAbsent(keyItem, (k) -> new Node(schema.get(finalI).newInstance.get()));
+            tNode = tNode.db.computeIfAbsent(keyItem, (k) -> new Node(schema.get(finalI).newInstance()));
         }
 
         tNode.updateValue(update);

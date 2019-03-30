@@ -56,7 +56,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
             for (int i = 0; i < node._id.size() - 1; i++) {
                 var nc = schema.get(i);
                 var key = node._id.get(nc.key);
-                cdb = cdb.computeIfAbsent(key, k -> new Node(nc.newInstance.get())).db;
+                cdb = cdb.computeIfAbsent(key, k -> new Node(nc.newInstance())).db;
             }
 
             var lastId = node._id.get(schema.get(node._id.size() - 1).key);

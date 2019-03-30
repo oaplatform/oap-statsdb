@@ -28,10 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import oap.util.Lists;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -48,6 +45,11 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
     }
 
     private void merge(String key, Node masterNode, Node rNode, List<List<String>> retList, int level) {
+        if (log.isTraceEnabled())
+            log.trace("merge {}/{}[{}]::{}", schema.get(level).key, schema.get(level).clazz, level, key);
+        assert Objects.equals(masterNode.v.getClass(), rNode.v.getClass())
+                : "[" + level + "]/" + key + "::" + masterNode.v.getClass() + " vs " + rNode.v.getClass();
+
         var list = merge(masterNode.db, rNode.db, retList, level);
         list.forEach(l -> l.add(0, key));
 
@@ -66,22 +68,23 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
             var key = entry.getKey();
             var rNode = entry.getValue();
 
-            var masterNode = masterDB.computeIfAbsent(key, (k) -> new Node(schema.get(level).newInstance.get()));
+            var masterNode = masterDB.computeIfAbsent(key, (k) -> new Node(schema.get(level + 1).newInstance()));
 
-            merge(key, masterNode, rNode, retList, level);
+            merge(key, masterNode, rNode, retList, level + 1);
         }
 
         return retList;
     }
 
-    private List<List<String>> merge(Map<String, Node> remoteDB, int level) {
+    private List<List<String>> merge(Map<String, Node> remoteDB) {
         assert remoteDB != null;
 
         var retList = new ArrayList<List<String>>();
 
         remoteDB.forEach((key, rnode) -> {
-            var mnode = db.computeIfAbsent(key, k -> new Node(schema.get(level).newInstance.get()));
-            merge(key, mnode, rnode, retList, level + 1);
+            var mnode = db.computeIfAbsent(key, k -> new Node(schema.get(0).newInstance()));
+
+            merge(key, mnode, rnode, retList, 0);
             updateAggregates(mnode);
         });
 
@@ -112,7 +115,7 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
 
             hosts.put(host, sync.id);
 
-            var failedKeys = merge(sync.data, 0);
+            var failedKeys = merge(sync.data);
 
             if (!failedKeys.isEmpty()) {
                 log.error("failed keys:");

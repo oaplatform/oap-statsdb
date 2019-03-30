@@ -24,46 +24,56 @@
 
 package oap.statsdb;
 
-import com.google.common.base.Preconditions;
+import lombok.SneakyThrows;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
 
 @ToString(callSuper = true)
-public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> {
-    private final HashMap<String, Supplier<Node.Value>> cons = new HashMap<>();
+public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> implements Serializable {
+    private static final long serialVersionUID = 1625813602788861879L;
+
+    private final HashMap<String, Class<? extends Node.Value>> cons = new HashMap<>();
 
     public NodeSchema() {
     }
 
-    public NodeSchema(NodeConfiguration... confs) {
+    @SafeVarargs
+    public NodeSchema(NodeConfiguration<? extends Node.Value>... confs) {
         this(asList(confs));
     }
 
-    public NodeSchema(List<NodeConfiguration> confs) {
+    public NodeSchema(List<NodeConfiguration<? extends Node.Value>> confs) {
         super(confs);
         for (var c : confs) {
-            cons.put(c.key, c.newInstance);
+            cons.put(c.key, c.clazz);
         }
     }
 
-    public static NodeConfiguration nc(String key, Supplier<Node.Value> newInstance) {
-        return new NodeConfiguration(key, newInstance);
+    public static <T extends Node.Value> NodeConfiguration<T> nc(String key, Class<T> clazz) {
+        return new NodeConfiguration<>(key, clazz);
     }
 
     @ToString
-    public static class NodeConfiguration {
-        public final String key;
-        public final Supplier<Node.Value> newInstance;
+    public static class NodeConfiguration<T extends Node.Value> implements Serializable {
+        private static final long serialVersionUID = -2296344454378267699L;
 
-        public NodeConfiguration(String key, Supplier<Node.Value> newInstance) {
+        public final String key;
+        public final Class<T> clazz;
+
+        public NodeConfiguration(String key, Class<T> clazz) {
             this.key = key;
-            this.newInstance = newInstance;
+            this.clazz = clazz;
+        }
+
+        @SneakyThrows
+        public Node.Value newInstance() {
+            return clazz.getDeclaredConstructor().newInstance();
         }
     }
 }
