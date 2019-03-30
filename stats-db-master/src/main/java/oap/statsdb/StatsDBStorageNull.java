@@ -17,4 +17,9 @@ public class StatsDBStorageNull implements StatsDBStorage {
     public void store(NodeSchema schema, Map<String, Node> db) {
 
     }
+
+    @Override
+    public void removeAll() {
+
+    }
 }

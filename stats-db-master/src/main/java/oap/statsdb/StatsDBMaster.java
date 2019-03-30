@@ -129,6 +129,7 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
     public void reset() {
         hosts.clear();
         removeAll();
+        storage.removeAll();
     }
 
     @Override

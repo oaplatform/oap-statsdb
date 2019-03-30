@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import oap.reflect.TypeRef;
 import oap.storage.mongo.MongoClient;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.bson.BsonDocument;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.joda.time.DateTimeUtils;
 
@@ -93,6 +94,11 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
         lastFsync = now;
 
         log.info("[{}] fsync modified: {}", collection.getNamespace(), count);
+    }
+
+    @Override
+    public void removeAll() {
+        collection.deleteMany(new BsonDocument());
     }
 
     private int store(NodeSchema schema, int index, Map<String, String> id,
