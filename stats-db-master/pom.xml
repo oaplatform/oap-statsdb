@@ -52,7 +52,7 @@
         <dependency>
             <groupId>oap</groupId>
             <artifactId>oap-storage-mongo</artifactId>
-            <version>${oap.version}</version>
+            <version>${oap.storage.version}</version>
         </dependency>
 
         <dependency>

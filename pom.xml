@@ -60,6 +60,7 @@
         <revision>1.3.0</revision>
 
         <oap.version>5.0.0</oap.version>
+        <oap.storage.version>5.1.0</oap.storage.version>
         <lombok.version>1.18.8</lombok.version>
     </properties>
 
