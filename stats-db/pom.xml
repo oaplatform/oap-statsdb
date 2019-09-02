@@ -43,11 +43,6 @@
             <artifactId>oap-stdlib</artifactId>
             <version>${oap.version}</version>
         </dependency>
-        <dependency>
-            <groupId>oap</groupId>
-            <artifactId>oap-json</artifactId>
-            <version>${oap.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

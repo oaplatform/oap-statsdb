@@ -2,6 +2,7 @@ package oap.statsdb;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import lombok.extern.slf4j.Slf4j;
 import oap.reflect.TypeRef;
@@ -19,13 +20,14 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.eq;
-import static oap.storage.mongo.MongoStorage.UPDATE_OPTIONS_UPSERT;
 
 /**
  * Created by igor.petrenko on 26.03.2019.
  */
 @Slf4j
 public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
+    private static final UpdateOptions UPDATE_OPTIONS_UPSERT = new UpdateOptions().upsert(true);
+
     private final MongoCollection<MongoNode> collection;
     public int bulkSize = 1000;
     private long lastFsync = -1;

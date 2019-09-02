@@ -51,11 +51,6 @@
         </dependency>
         <dependency>
             <groupId>oap</groupId>
-            <artifactId>oap-json</artifactId>
-            <version>${oap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>oap</groupId>
             <artifactId>oap-storage-mongo</artifactId>
             <version>${oap.version}</version>
         </dependency>
@@ -65,13 +60,6 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>oap</groupId>
-            <artifactId>oap-application</artifactId>
-            <version>${oap.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
