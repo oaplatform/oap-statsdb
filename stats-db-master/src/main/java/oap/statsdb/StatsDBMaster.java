@@ -25,14 +25,20 @@
 package oap.statsdb;
 
 import lombok.extern.slf4j.Slf4j;
+import oap.metrics.Metrics;
+import oap.metrics.Name;
 import oap.util.Lists;
+import oap.util.MemoryMeter;
 
 import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, Runnable {
+    private static final Name STATSDB_MEMORY_USAGE = Metrics.name("statsdb.memory_usage");
+
     private final ConcurrentHashMap<String, String> hosts = new ConcurrentHashMap<>();
     private final StatsDBStorage storage;
 
@@ -42,6 +48,11 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
 
         db.putAll(storage.load(schema));
         init(db.values());
+
+        var memoryMeter = MemoryMeter.get();
+
+        Metrics.measureCachedGauge(STATSDB_MEMORY_USAGE, 10, TimeUnit.MINUTES,
+                () -> memoryMeter.measureDeep(db));
     }
 
     private void merge(String key, Node masterNode, Node rNode, List<List<String>> retList, int level) {
