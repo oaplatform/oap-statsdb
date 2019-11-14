@@ -24,9 +24,13 @@
 
 package oap.statsdb;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.MultiGauge;
+import io.micrometer.core.instrument.Tags;
 import lombok.extern.slf4j.Slf4j;
-import oap.metrics.Metrics;
-import oap.metrics.Name;
+import oap.concurrent.scheduler.Scheduled;
+import oap.concurrent.scheduler.Scheduler;
+import oap.io.Closeables;
 import oap.util.Lists;
 import oap.util.MemoryMeter;
 
@@ -37,10 +41,10 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, Runnable {
-    private static final Name STATSDB_MEMORY_USAGE = Metrics.name("statsdb.memory_usage");
-
     private final ConcurrentHashMap<String, String> hosts = new ConcurrentHashMap<>();
     private final StatsDBStorage storage;
+    private final MultiGauge statsdb_memory_usage;
+    private final Scheduled scheduled;
 
     public StatsDBMaster(NodeSchema schema, StatsDBStorage storage) {
         super(schema);
@@ -51,8 +55,10 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
 
         var memoryMeter = MemoryMeter.get();
 
-        Metrics.measureCachedGauge(STATSDB_MEMORY_USAGE, 10, TimeUnit.MINUTES,
-                () -> memoryMeter.measureDeep(db));
+        statsdb_memory_usage = MultiGauge.builder("statsdb_memory_usage").register(Metrics.globalRegistry);
+
+        scheduled = Scheduler.scheduleWithFixedDelay(10, TimeUnit.MINUTES, () ->
+                statsdb_memory_usage.register(List.of(MultiGauge.Row.of(Tags.empty(), memoryMeter.measureDeep(db))), true));
     }
 
     private void merge(String key, Node masterNode, Node rNode, List<List<String>> retList, int level) {
@@ -145,6 +151,7 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
 
     @Override
     public void close() {
+        Closeables.close(scheduled);
         storage.store(schema, db);
     }
 

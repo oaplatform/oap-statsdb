@@ -28,8 +28,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import oap.application.remote.RemoteSerialization;
-import oap.storage.mongo.AbstractMongoTest;
+import oap.storage.mongo.MongoFixture;
 import oap.testng.Env;
+import oap.testng.Fixtures;
+import oap.testng.TestDirectory;
 import oap.util.Cuid;
 import org.testng.annotations.Test;
 
@@ -42,7 +44,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Created by igor.petrenko on 08.09.2017.
  */
 @Test
-public class StatsDBTest extends AbstractMongoTest {
+public class StatsDBTest extends Fixtures {
+
+    private static final MongoFixture MONGO_FIXTURE = new MongoFixture();
     private static final NodeSchema schema2 = new NodeSchema(
             nc("n1", MockChild2.class),
             nc("n2", MockValue.class));
@@ -50,6 +54,11 @@ public class StatsDBTest extends AbstractMongoTest {
             nc("n1", MockChild1.class),
             nc("n2", MockChild2.class),
             nc("n3", MockValue.class));
+
+    {
+        fixture(MONGO_FIXTURE);
+        fixture(TestDirectory.FIXTURE);
+    }
 
     @Test
     public void testEmptySync() {
@@ -124,7 +133,7 @@ public class StatsDBTest extends AbstractMongoTest {
 
     @Test
     public void persistMaster() {
-        try (var masterStorage = new StatsDBStorageMongo(mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              StatsDBMaster master = new StatsDBMaster(schema3, masterStorage)) {
             master.<MockValue>update("k1", "k2", "k3", c -> c.v += 8);
             master.<MockValue>update("k1", "k2", "k3", c -> c.v += 2);
@@ -132,7 +141,7 @@ public class StatsDBTest extends AbstractMongoTest {
             master.<MockChild1>update("k1", c -> c.vc += 111);
         }
 
-        try (var masterStorage = new StatsDBStorageMongo(mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              StatsDBMaster master = new StatsDBMaster(schema3, masterStorage)) {
             assertThat(master.<MockValue>get("k1", "k2", "k3").v).isEqualTo(10);
 
@@ -161,7 +170,7 @@ public class StatsDBTest extends AbstractMongoTest {
 
     @Test
     public void sync() {
-        try (var masterStorage = new StatsDBStorageMongo(mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              var master = new StatsDBMaster(schema2, masterStorage);
              var node = new StatsDBNode(schema2, getProxy(master), null)) {
             node.sync();
@@ -189,7 +198,7 @@ public class StatsDBTest extends AbstractMongoTest {
 
     @Test
     public void calculatedValuesAfterRestart() {
-        try (var masterStorage = new StatsDBStorageMongo(mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              var master = new StatsDBMaster(schema2, masterStorage);
              var node = new StatsDBNode(schema2, getProxy(master), null)) {
             node.sync();
@@ -199,7 +208,7 @@ public class StatsDBTest extends AbstractMongoTest {
             node.<MockChild2>update("k1", c -> c.vc += 20);
         }
 
-        try (var masterStorage = new StatsDBStorageMongo(mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              var master = new StatsDBMaster(schema2, masterStorage)) {
             assertThat(master.<MockChild2>get("k1").sum).isEqualTo(11L);
         }
