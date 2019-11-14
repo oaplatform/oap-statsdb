@@ -39,6 +39,10 @@
             <id>oap</id>
             <url>https://mvn.oaplatform.org</url>
         </repository>
+        <repository>
+            <id>projectlombok.org</id>
+            <url>https://projectlombok.org/edge-releases</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
@@ -57,11 +61,11 @@
         <maven.compiler.source>13</maven.compiler.source>
         <maven.compiler.target>13</maven.compiler.target>
 
-        <revision>2.0.0</revision>
+        <revision>2.0.1</revision>
 
-        <oap.version>6.0.0</oap.version>
-        <oap.storage.version>6.0.0</oap.storage.version>
-        <lombok.version>1.18.10</lombok.version>
+        <oap.version>6.0.2</oap.version>
+        <oap.storage.version>6.0.1</oap.storage.version>
+        <lombok.version>edge-SNAPSHOT</lombok.version>
     </properties>
 
     <dependencies>
