@@ -30,6 +30,7 @@ import oap.io.IoStreams.Encoding;
 import oap.json.Binder;
 import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Cuid;
+import org.joda.time.DateTimeUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -72,7 +73,7 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
         if (sync == null) {
             var snapshot = snapshot(true);
             if (!snapshot.isEmpty()) {
-                sync = new Sync(snapshot, cuid.next());
+                sync = new Sync(snapshot, cuid.next(), DateTimeUtils.currentTimeMillis());
                 saveToFile();
             } else {
                 lastSyncSuccess = true;

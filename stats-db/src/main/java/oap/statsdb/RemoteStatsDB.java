@@ -26,8 +26,8 @@ package oap.statsdb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.ToString;
+import org.joda.time.DateTimeUtils;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -39,11 +39,13 @@ public interface RemoteStatsDB {
 
         public final Map<String, Node> data;
         public final String id;
+        public final long timestamp;
 
         @JsonCreator
-        public Sync( @JsonProperty Map<String, Node> data, @JsonProperty String id ) {
+        public Sync(Map<String, Node> data, String id, long timestamp) {
             this.data = data;
             this.id = id;
+            this.timestamp = timestamp;
         }
 
         @JsonIgnore
