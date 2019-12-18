@@ -30,7 +30,6 @@ import oap.io.IoStreams.Encoding;
 import oap.json.Binder;
 import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Cuid;
-import org.joda.time.DateTimeUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -42,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class StatsDBNode extends StatsDB implements Runnable, Closeable {
+    private static final Cuid timestamp = Cuid.UNIQUE;
     private final Path directory;
     private final StatsDBTransport transport;
     private final Cuid cuid;
@@ -73,7 +73,7 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
         if (sync == null) {
             var snapshot = snapshot(true);
             if (!snapshot.isEmpty()) {
-                sync = new Sync(snapshot, cuid.next(), DateTimeUtils.currentTimeMillis());
+                sync = new Sync(snapshot, cuid.next(), timestamp.nextLong());
                 saveToFile();
             } else {
                 lastSyncSuccess = true;
