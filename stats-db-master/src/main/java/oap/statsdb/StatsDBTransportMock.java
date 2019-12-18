@@ -13,6 +13,10 @@ public class StatsDBTransportMock implements StatsDBTransport {
     private final StatsDBMaster master;
     private Function<RemoteStatsDB.Sync, RuntimeException> exceptionFunc;
 
+    public StatsDBTransportMock() {
+        this(null);
+    }
+
     public StatsDBTransportMock(StatsDBMaster master) {
         this.master = master;
     }
@@ -21,7 +25,7 @@ public class StatsDBTransportMock implements StatsDBTransport {
     public boolean send(RemoteStatsDB.Sync sync) {
         if (exceptionFunc != null) throw exceptionFunc.apply(sync);
 
-        syncs.add( sync );
+        syncs.add(sync);
 
         return master == null || master.update(sync, Inet.HOSTNAME);
     }

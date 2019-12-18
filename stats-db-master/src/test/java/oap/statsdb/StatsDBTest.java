@@ -62,7 +62,7 @@ public class StatsDBTest extends Fixtures {
     @Test
     public void testEmptySync() {
         try (var master = new StatsDBMaster(schema3, StatsDBStorage.NULL);
-             var node = new StatsDBNode(schema3, getTransport(master), null)) {
+             var node = new StatsDBNode(schema3, new StatsDBTransportMock(master), null)) {
 
             assertThat(node.lastSyncSuccess).isFalse();
             node.sync();
@@ -96,7 +96,7 @@ public class StatsDBTest extends Fixtures {
     @Test
     public void mergeChild() {
         try (var master = new StatsDBMaster(schema3, StatsDBStorage.NULL);
-             var node = new StatsDBNode(schema3, getTransport(master), null)) {
+             var node = new StatsDBNode(schema3, new StatsDBTransportMock(master), null)) {
 
             node.<MockChild1>update("p1", p -> p.vc += 1);
             node.<MockChild2>update("p1", "c2", c -> c.vc += 1);
@@ -125,15 +125,6 @@ public class StatsDBTest extends Fixtures {
         }
     }
 
-    private StatsDBTransportMock getTransport(StatsDBMaster master) {
-        return new StatsDBTransportMock(master);
-    }
-
-    private StatsDBTransportMock getTransport() {
-        return new StatsDBTransportMock(null);
-    }
-
-
     @Test
     public void persistMaster() {
         try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
@@ -155,7 +146,7 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void persistNode() {
-        var proxy = getTransport();
+        var proxy = new StatsDBTransportMock();
 
         proxy.syncWithException((sync) -> new RuntimeException("sync"));
 
@@ -176,7 +167,7 @@ public class StatsDBTest extends Fixtures {
     public void sync() {
         try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              var master = new StatsDBMaster(schema2, masterStorage);
-             var node = new StatsDBNode(schema2, getTransport(master), null)) {
+             var node = new StatsDBNode(schema2, new StatsDBTransportMock(master), null)) {
             node.sync();
 
             node.<MockValue>update("k1", "k2", c -> c.v += 10);
@@ -204,7 +195,7 @@ public class StatsDBTest extends Fixtures {
     public void calculatedValuesAfterRestart() {
         try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              var master = new StatsDBMaster(schema2, masterStorage);
-             var node = new StatsDBNode(schema2, getTransport(master), null)) {
+             var node = new StatsDBNode(schema2, new StatsDBTransportMock(master), null)) {
             node.sync();
 
             node.<MockValue>update("k1", "k2", c -> c.v += 10);
@@ -220,7 +211,7 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void syncFailed() {
-        var transport = getTransport();
+        var transport = new StatsDBTransportMock();
 
         try (var node = new StatsDBNode(schema2, transport, Env.tmpPath("node"))) {
             transport.syncWithException((sync) -> new RuntimeException("sync"));
@@ -245,7 +236,7 @@ public class StatsDBTest extends Fixtures {
     public void version() {
         var uid = Cuid.incremental(0);
         try (StatsDBMaster master = new StatsDBMaster(schema2, StatsDBStorage.NULL);
-             StatsDBNode node = new StatsDBNode(schema2, getTransport(master), null, uid)) {
+             StatsDBNode node = new StatsDBNode(schema2, new StatsDBTransportMock(master), null, uid)) {
 
             uid.reset(0);
 
