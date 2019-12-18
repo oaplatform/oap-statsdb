@@ -6,7 +6,7 @@ import oap.message.MessageSender;
  * Created by igor.petrenko on 2019-12-17.
  */
 public class StatsDBTransportMessage implements StatsDBTransport {
-    public final byte MESSAGE_TYPE = 10;
+    public static final byte MESSAGE_TYPE = 10;
 
     private final MessageSender sender;
 
