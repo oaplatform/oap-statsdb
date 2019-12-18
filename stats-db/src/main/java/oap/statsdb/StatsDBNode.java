@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import oap.io.IoStreams;
 import oap.io.IoStreams.Encoding;
 import oap.json.Binder;
-import oap.net.Inet;
 import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Cuid;
 
@@ -43,19 +42,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class StatsDBNode extends StatsDB implements Runnable, Closeable {
     private final Path directory;
-    private final RemoteStatsDB master;
+    private final StatsDBTransport transport;
     private final Cuid cuid;
     protected boolean lastSyncSuccess = false;
     volatile Sync sync = null;
 
-    public StatsDBNode(NodeSchema schema, RemoteStatsDB master, Path directory) {
-        this(schema, master, directory, Cuid.UNIQUE);
+    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Path directory) {
+        this(schema, transport, directory, Cuid.UNIQUE);
     }
 
-    public StatsDBNode(NodeSchema schema, RemoteStatsDB master, Path directory, Cuid cuid) {
+    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Path directory, Cuid cuid) {
         super(schema);
         this.directory = directory;
-        this.master = master;
+        this.transport = transport;
         this.cuid = cuid;
 
         if (directory != null) {
@@ -82,7 +81,7 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
         }
 
         try {
-            if (master.update(sync, Inet.hostname())) {
+            if (transport.send(sync)) {
                 sync = null;
                 saveToFile();
             }

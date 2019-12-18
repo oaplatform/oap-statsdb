@@ -27,7 +27,6 @@ package oap.statsdb;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import oap.application.remote.RemoteSerialization;
 import oap.storage.mongo.MongoFixture;
 import oap.testng.Env;
 import oap.testng.Fixtures;
@@ -63,7 +62,7 @@ public class StatsDBTest extends Fixtures {
     @Test
     public void testEmptySync() {
         try (var master = new StatsDBMaster(schema3, StatsDBStorage.NULL);
-             var node = new StatsDBNode(schema3, getProxy(master), null)) {
+             var node = new StatsDBNode(schema3, getTransport(master), null)) {
 
             assertThat(node.lastSyncSuccess).isFalse();
             node.sync();
@@ -97,7 +96,7 @@ public class StatsDBTest extends Fixtures {
     @Test
     public void mergeChild() {
         try (var master = new StatsDBMaster(schema3, StatsDBStorage.NULL);
-             var node = new StatsDBNode(schema3, getProxy(master), null)) {
+             var node = new StatsDBNode(schema3, getTransport(master), null)) {
 
             node.<MockChild1>update("p1", p -> p.vc += 1);
             node.<MockChild2>update("p1", "c2", c -> c.vc += 1);
@@ -126,8 +125,12 @@ public class StatsDBTest extends Fixtures {
         }
     }
 
-    private RemoteStatsDB getProxy(RemoteStatsDB master) {
-        return RemoteSerialization.Proxy(RemoteStatsDB.class, master);
+    private StatsDBTransportMock getTransport(StatsDBMaster master) {
+        return new StatsDBTransportMock(master);
+    }
+
+    private StatsDBTransportMock getTransport() {
+        return new StatsDBTransportMock(null);
     }
 
 
@@ -152,19 +155,20 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void persistNode() {
-        var master = new MockRemoteStatsDB(schema2);
-        master.syncWithException((sync) -> new RuntimeException("sync"));
+        var proxy = getTransport();
 
-        try (var node = new StatsDBNode(schema2, getProxy(master), Env.tmpPath("node"))) {
+        proxy.syncWithException((sync) -> new RuntimeException("sync"));
+
+        try (var node = new StatsDBNode(schema2, proxy, Env.tmpPath("node"))) {
             node.<MockValue>update("k1", "k2", c -> c.v += 10);
         }
 
-        master.syncWithoutException();
-        try (var node = new StatsDBNode(schema2, getProxy(master), Env.tmpPath("node"))) {
+        proxy.syncWithoutException();
+        try (var node = new StatsDBNode(schema2, proxy, Env.tmpPath("node"))) {
             node.sync();
 
-            assertThat(master.syncs).hasSize(1);
-            assertThat(master.syncs.get(0).data.containsKey("k1"));
+            assertThat(proxy.syncs).hasSize(1);
+            assertThat(proxy.syncs.get(0).data.containsKey("k1"));
         }
     }
 
@@ -172,7 +176,7 @@ public class StatsDBTest extends Fixtures {
     public void sync() {
         try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              var master = new StatsDBMaster(schema2, masterStorage);
-             var node = new StatsDBNode(schema2, getProxy(master), null)) {
+             var node = new StatsDBNode(schema2, getTransport(master), null)) {
             node.sync();
 
             node.<MockValue>update("k1", "k2", c -> c.v += 10);
@@ -200,7 +204,7 @@ public class StatsDBTest extends Fixtures {
     public void calculatedValuesAfterRestart() {
         try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
              var master = new StatsDBMaster(schema2, masterStorage);
-             var node = new StatsDBNode(schema2, getProxy(master), null)) {
+             var node = new StatsDBNode(schema2, getTransport(master), null)) {
             node.sync();
 
             node.<MockValue>update("k1", "k2", c -> c.v += 10);
@@ -216,32 +220,32 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void syncFailed() {
-        var master = new MockRemoteStatsDB(schema2);
+        var transport = getTransport();
 
-        try (var node = new StatsDBNode(schema2, getProxy(master), Env.tmpPath("node"))) {
-            master.syncWithException((sync) -> new RuntimeException("sync"));
+        try (var node = new StatsDBNode(schema2, transport, Env.tmpPath("node"))) {
+            transport.syncWithException((sync) -> new RuntimeException("sync"));
             node.<MockValue>update("k1", "k2", c -> c.v += 10);
             node.sync();
             assertThat(node.<MockValue>get("k1", "k2")).isNull();
         }
 
-        assertThat(master.syncs).isEmpty();
+        assertThat(transport.syncs).isEmpty();
 
-        try (var node = new StatsDBNode(schema2, getProxy(master), Env.tmpPath("node"))) {
-            master.syncWithoutException();
+        try (var node = new StatsDBNode(schema2, transport, Env.tmpPath("node"))) {
+            transport.syncWithoutException();
             node.sync();
 
             assertThat(node.<MockValue>get("k1", "k2")).isNull();
         }
 
-        assertThat(master.syncs).hasSize(1);
+        assertThat(transport.syncs).hasSize(1);
     }
 
     @Test
     public void version() {
         var uid = Cuid.incremental(0);
         try (StatsDBMaster master = new StatsDBMaster(schema2, StatsDBStorage.NULL);
-             StatsDBNode node = new StatsDBNode(schema2, getProxy(master), null, uid)) {
+             StatsDBNode node = new StatsDBNode(schema2, getTransport(master), null, uid)) {
 
             uid.reset(0);
 

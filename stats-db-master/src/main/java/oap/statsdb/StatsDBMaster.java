@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, Runnable {
+public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
     private final ConcurrentHashMap<String, String> hosts = new ConcurrentHashMap<>();
     private final StatsDBStorage storage;
     private final MultiGauge statsdb_memory_usage;
@@ -118,7 +118,6 @@ public class StatsDBMaster extends StatsDB implements RemoteStatsDB, Closeable, 
         });
     }
 
-    @Override
     public boolean update(RemoteStatsDB.Sync sync, String host) {
         assert sync != null;
         assert sync.data != null;
