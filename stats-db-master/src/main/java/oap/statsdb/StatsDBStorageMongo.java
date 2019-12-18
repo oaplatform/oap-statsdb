@@ -2,7 +2,7 @@ package oap.statsdb;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOneModel;
-import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.WriteModel;
 import lombok.extern.slf4j.Slf4j;
 import oap.reflect.TypeRef;
@@ -26,7 +26,7 @@ import static com.mongodb.client.model.Filters.eq;
  */
 @Slf4j
 public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
-    private static final UpdateOptions UPDATE_OPTIONS_UPSERT = new UpdateOptions().upsert(true);
+    private static final ReplaceOptions REPLACE_OPTIONS_UPSERT = new ReplaceOptions().upsert(true);
 
     private final MongoCollection<MongoNode> collection;
     public int bulkSize = 1000;
@@ -116,7 +116,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
             newId.put(schema.get(index).key, key);
 
             if (value.mt >= lastFsync) {
-                bulk.add(new ReplaceOneModel<>(eq("_id", newId), new MongoNode(newId, value), UPDATE_OPTIONS_UPSERT));
+                bulk.add(new ReplaceOneModel<>(eq("_id", newId), new MongoNode(newId, new Node(value.ct, value.mt, value.v)), REPLACE_OPTIONS_UPSERT));
                 if (bulk.size() >= bulkSize) {
                     collection.bulkWrite(bulk);
                     count.add(bulk.size());

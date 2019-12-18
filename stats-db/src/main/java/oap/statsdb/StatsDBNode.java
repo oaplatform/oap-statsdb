@@ -35,7 +35,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -71,7 +70,7 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
 
     public synchronized void sync() {
         if (sync == null) {
-            var snapshot = snapshot(true);
+            var snapshot = snapshot();
             if (!snapshot.isEmpty()) {
                 sync = new Sync(snapshot, cuid.next(), timestamp.nextLong());
                 saveToFile();
@@ -93,16 +92,10 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
         }
     }
 
-    private Map<String, Node> snapshot(boolean clean) {
-        if (clean) {
-            var ret = db;
-            db = new ConcurrentHashMap<>();
+    private Map<String, Node> snapshot() {
+        var ret = db;
+        db = new ConcurrentHashMap<>();
 
-            return ret;
-        }
-
-        var ret = new HashMap<String, Node>(db.size());
-        ret.putAll(db);
         return ret;
     }
 

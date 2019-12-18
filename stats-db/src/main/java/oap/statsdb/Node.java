@@ -25,7 +25,6 @@
 package oap.statsdb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import lombok.EqualsAndHashCode;
@@ -47,7 +46,6 @@ import java.util.function.Consumer;
 public class Node implements Serializable {
     private static final long serialVersionUID = 4194048067764234L;
 
-    @JsonIgnore
     public volatile ConcurrentHashMap<String, Node> db = new ConcurrentHashMap<>();
     @JsonTypeIdResolver(TypeIdFactory.class)
     @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "o:t")
@@ -59,9 +57,14 @@ public class Node implements Serializable {
         this(DateTimeUtils.currentTimeMillis(), v);
     }
 
-    @JsonCreator
     public Node(long ct, Value v) {
-        this.mt = this.ct = ct;
+        this(ct, ct, v);
+    }
+
+    @JsonCreator
+    public Node(long mt, long ct, Value v) {
+        this.mt = mt;
+        this.ct = ct;
         this.v = v;
     }
 
