@@ -25,66 +25,38 @@
 package oap.statsdb;
 
 import lombok.extern.slf4j.Slf4j;
-import oap.io.IoStreams;
-import oap.io.IoStreams.Encoding;
-import oap.json.Binder;
 import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Cuid;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class StatsDBNode extends StatsDB implements Runnable, Closeable {
     private static final Cuid timestamp = Cuid.UNIQUE;
-    private final Path directory;
     private final StatsDBTransport transport;
     private final Cuid cuid;
     protected boolean lastSyncSuccess = false;
-    volatile Sync sync = null;
 
-    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Path directory) {
-        this(schema, transport, directory, Cuid.UNIQUE);
+    public StatsDBNode(NodeSchema schema, StatsDBTransport transport) {
+        this(schema, transport, Cuid.UNIQUE);
     }
 
-    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Path directory, Cuid cuid) {
+    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Cuid cuid) {
         super(schema);
-        this.directory = directory;
         this.transport = transport;
         this.cuid = cuid;
-
-        if (directory != null) {
-            var syncPath = directory.resolve("sync.db.gz");
-            if (Files.exists(syncPath)) {
-                log.info("sync file = {}", syncPath);
-                sync = Binder.json.unmarshal(Sync.class, syncPath);
-            } else {
-                log.debug("{} not exists", syncPath);
-            }
-        }
     }
 
     public synchronized void sync() {
-        if (sync == null) {
+        try {
             var snapshot = snapshot();
             if (!snapshot.isEmpty()) {
-                sync = new Sync(snapshot, cuid.next(), timestamp.nextLong());
-                saveToFile();
-            } else {
-                lastSyncSuccess = true;
-                return;
+                var sync = new Sync(snapshot, cuid.next(), timestamp.nextLong());
+                transport.send(sync).get();
             }
-        }
 
-        try {
-            if (transport.send(sync)) {
-                sync = null;
-                saveToFile();
-            }
             lastSyncSuccess = true;
         } catch (Exception e) {
             lastSyncSuccess = false;
@@ -99,27 +71,6 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
         return ret;
     }
 
-    private synchronized void saveToFile() {
-        if (directory != null) {
-            var syncFile = directory.resolve("sync.db.gz");
-            if (sync == null) try {
-                log.debug("sync == null, remove {}", syncFile);
-                Files.deleteIfExists(syncFile);
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-            else {
-                log.debug("saveToFile {}", syncFile);
-                oap.io.Files.ensureFile(syncFile);
-                try (var sfos = IoStreams.out(syncFile, Encoding.from(syncFile), IoStreams.DEFAULT_BUFFER, false, true)) {
-                    Binder.json.marshal(sfos, sync);
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-        }
-    }
-
     @Override
     public void run() {
         sync();
@@ -128,15 +79,11 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
     @Override
     public synchronized void removeAll() {
         super.removeAll();
-
-        sync = null;
-        saveToFile();
     }
 
     @Override
     public void close() {
         log.info("close");
         sync();
-        saveToFile();
     }
 }

@@ -2,6 +2,8 @@ package oap.statsdb;
 
 import oap.message.MessageSender;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Created by igor.petrenko on 2019-12-17.
  */
@@ -15,7 +17,7 @@ public class StatsDBTransportMessage implements StatsDBTransport {
     }
 
     @Override
-    public boolean send(RemoteStatsDB.Sync sync) {
+    public CompletableFuture<?> send(RemoteStatsDB.Sync sync) {
         return sender.sendJson(MESSAGE_TYPE, sync);
     }
 }
