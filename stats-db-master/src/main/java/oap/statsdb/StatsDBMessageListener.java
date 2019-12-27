@@ -5,6 +5,8 @@ import oap.message.MessageListener;
 
 import java.io.ByteArrayInputStream;
 
+import static oap.statsdb.StatsDBTransportMessage.MESSAGE_TYPE;
+
 /**
  * Created by igor.petrenko on 2019-12-17.
  */
@@ -17,7 +19,7 @@ public class StatsDBMessageListener implements MessageListener {
 
     @Override
     public byte getId() {
-        return 1;
+        return MESSAGE_TYPE;
     }
 
     @Override
