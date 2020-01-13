@@ -37,9 +37,9 @@
         <maven.compiler.source>13</maven.compiler.source>
         <maven.compiler.target>13</maven.compiler.target>
 
-        <revision>2.2.1</revision>
+        <revision>2.2.2</revision>
 
-        <oap.version>6.4.1</oap.version>
+        <oap.version>6.4.9</oap.version>
         <oap.storage.version>6.0.4</oap.storage.version>
         <lombok.version>edge-SNAPSHOT</lombok.version>
     </properties>

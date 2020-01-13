@@ -2,6 +2,7 @@ package oap.statsdb;
 
 import oap.json.Binder;
 import oap.message.MessageListener;
+import oap.message.MessageProtocol;
 
 import java.io.ByteArrayInputStream;
 
@@ -28,8 +29,10 @@ public class StatsDBMessageListener implements MessageListener {
     }
 
     @Override
-    public void run(int version, String hostName, int size, byte[] data) {
+    public short run(int version, String hostName, int size, byte[] data) {
         var sync = Binder.json.<RemoteStatsDB.Sync>unmarshal(RemoteStatsDB.Sync.class, new ByteArrayInputStream(data));
         master.update(sync, hostName);
+
+        return MessageProtocol.STATUS_OK;
     }
 }
