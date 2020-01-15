@@ -36,12 +36,10 @@ import oap.util.MemoryMeter;
 
 import java.io.Closeable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
-    private final ConcurrentHashMap<String, String> hosts = new ConcurrentHashMap<>();
     private final StatsDBStorage storage;
     private final MultiGauge statsdb_memory_usage;
     private final Scheduled scheduled;
@@ -123,14 +121,6 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         assert sync.data != null;
 
         synchronized (host.intern()) {
-            var lastId = hosts.getOrDefault(host, "");
-            if (sync.id.compareTo(lastId) <= 0) {
-                log.warn("[{}] diff ({}) already merged. Last merged diff is ({})", host, sync.id, lastId);
-                return true;
-            }
-
-            hosts.put(host, sync.id);
-
             var failedKeys = merge(sync.data);
 
             if (!failedKeys.isEmpty()) {
@@ -143,7 +133,6 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
     }
 
     public void reset() {
-        hosts.clear();
         removeAll();
         storage.removeAll();
     }
