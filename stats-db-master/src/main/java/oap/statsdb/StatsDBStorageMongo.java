@@ -95,7 +95,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
 
         lastFsync = now;
 
-        log.info("[{}] fsync modified: {}", collection.getNamespace(), count);
+        log.debug("[{}] fsync modified: {}", collection.getNamespace(), count);
     }
 
     @Override
