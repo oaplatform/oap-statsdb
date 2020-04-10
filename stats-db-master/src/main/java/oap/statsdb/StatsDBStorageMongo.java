@@ -38,10 +38,10 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
 
         var codecRegistry = CodecRegistries.fromRegistries(
                 CodecRegistries.fromCodecs(new JsonNodeCodec()),
-                mongoClient.database.getCodecRegistry()
+                mongoClient.getCodecRegistry()
         );
 
-        this.collection = mongoClient.database
+        this.collection = mongoClient
                 .getCollection(table, ref.clazz())
                 .withCodecRegistry(codecRegistry);
 

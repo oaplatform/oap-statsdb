@@ -126,7 +126,7 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void persistMaster() {
-        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MONGO_FIXTURE.getMongoClient(), "test");
              StatsDBMaster master = new StatsDBMaster(schema3, masterStorage)) {
             master.<MockValue>update("k1", "k2", "k3", c -> c.v += 8);
             master.<MockValue>update("k1", "k2", "k3", c -> c.v += 2);
@@ -134,7 +134,7 @@ public class StatsDBTest extends Fixtures {
             master.<MockChild1>update("k1", c -> c.vc += 111);
         }
 
-        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MONGO_FIXTURE.getMongoClient(), "test");
              StatsDBMaster master = new StatsDBMaster(schema3, masterStorage)) {
             assertThat(master.<MockValue>get("k1", "k2", "k3").v).isEqualTo(10);
 
@@ -145,7 +145,7 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void sync() {
-        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MONGO_FIXTURE.getMongoClient(), "test");
              var master = new StatsDBMaster(schema2, masterStorage);
              var node = new StatsDBNode(schema2, new StatsDBTransportMock(master))) {
             node.sync();
@@ -173,7 +173,7 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void calculatedValuesAfterRestart() {
-        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MONGO_FIXTURE.getMongoClient(), "test");
              var master = new StatsDBMaster(schema2, masterStorage);
              var node = new StatsDBNode(schema2, new StatsDBTransportMock(master))) {
             node.sync();
@@ -183,7 +183,7 @@ public class StatsDBTest extends Fixtures {
             node.<MockChild2>update("k1", c -> c.vc += 20);
         }
 
-        try (var masterStorage = new StatsDBStorageMongo(MongoFixture.mongoClient, "test");
+        try (var masterStorage = new StatsDBStorageMongo(MONGO_FIXTURE.getMongoClient(), "test");
              var master = new StatsDBMaster(schema2, masterStorage)) {
             assertThat(master.<MockChild2>get("k1").sum).isEqualTo(11L);
         }
