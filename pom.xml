@@ -33,9 +33,9 @@
         <maven.compiler.source>13</maven.compiler.source>
         <maven.compiler.target>13</maven.compiler.target>
 
-        <revision>2.2.7</revision>
+        <revision>2.2.8</revision>
 
-        <oap.version>6.9.7</oap.version>
+        <oap.version>6.9.9</oap.version>
         <oap.storage.version>6.8.4</oap.storage.version>
         <lombok.version>1.18.12</lombok.version>
     </properties>
@@ -65,7 +65,6 @@
                 <configuration>
                     <argLine>
                         -ea
-                        -Dlogback.configurationFile=${session.executionRootDirectory}/oap-stdlib/src/test/resources/logback-test.xml
                     </argLine>
                     <trimStackTrace>false</trimStackTrace>
                     <testFailureIgnore>true</testFailureIgnore>

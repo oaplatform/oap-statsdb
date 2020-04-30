@@ -1,10 +1,10 @@
 package oap.statsdb;
 
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by igor.petrenko on 2019-12-17.
  */
 public interface StatsDBTransport {
-    Future<?> send(RemoteStatsDB.Sync sync);
+    CompletableFuture<?> send(RemoteStatsDB.Sync sync);
 }
