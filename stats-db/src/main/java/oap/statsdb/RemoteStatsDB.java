@@ -39,13 +39,11 @@ public interface RemoteStatsDB {
 
         public final Map<String, Node> data;
         public final String id;
-        public final long timestamp;
 
         @JsonCreator
-        public Sync(Map<String, Node> data, String id, long timestamp) {
+        public Sync(Map<String, Node> data, String id) {
             this.data = data;
             this.id = id;
-            this.timestamp = timestamp;
         }
 
         @JsonIgnore

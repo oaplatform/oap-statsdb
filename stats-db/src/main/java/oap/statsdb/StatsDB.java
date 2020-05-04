@@ -67,8 +67,15 @@ public abstract class StatsDB {
 
         var rootKey = key[0];
 
-        var node = db.computeIfAbsent(rootKey, rk -> new Node(schema.get(0).newInstance()));
-        updateNode(key, update, node, schema);
+        db.compute(rootKey, (k, n) -> {
+            if(n == null) {
+                n = new Node(schema.get(0).newInstance());
+            }
+
+            updateNode(key, update, n, schema);
+
+            return n;
+        });
     }
 
     protected <V extends Node.Value<V>>

@@ -27,33 +27,33 @@ package oap.statsdb;
 import lombok.extern.slf4j.Slf4j;
 import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Cuid;
+import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.io.Closeable;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class StatsDBNode extends StatsDB implements Runnable, Closeable {
-    private static final Cuid timestamp = Cuid.UNIQUE;
     private final StatsDBTransport transport;
-    private final Cuid cuid;
+    private final Cuid timestamp;
     protected boolean lastSyncSuccess = false;
 
     public StatsDBNode(NodeSchema schema, StatsDBTransport transport) {
         this(schema, transport, Cuid.UNIQUE);
     }
 
-    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Cuid cuid) {
+    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Cuid timestamp) {
         super(schema);
         this.transport = transport;
-        this.cuid = cuid;
+        this.timestamp = timestamp;
     }
 
     public synchronized void sync() {
         try {
             var snapshot = snapshot();
             if (!snapshot.isEmpty()) {
-                var sync = new Sync(snapshot, cuid.next(), timestamp.nextLong());
+                var sync = new Sync(snapshot, timestamp.next());
                 transport.send(sync).get();
             }
 
@@ -65,8 +65,15 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
     }
 
     private Map<String, Node> snapshot() {
-        var ret = db;
-        db = new ConcurrentHashMap<>();
+        var ret = new HashMap<String, Node>();
+        var mnode = new MutableObject<Node>();
+        for (var entry : db.entrySet()) {
+            db.compute(entry.getKey(), (k, v) -> {
+                mnode.setValue(v);
+                return null;
+            });
+            ret.put(entry.getKey(), mnode.getValue());
+        }
 
         return ret;
     }

@@ -27,10 +27,12 @@ package oap.statsdb;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import oap.message.MessageSender;
+import oap.message.MessageServer;
 import oap.storage.mongo.memory.MongoFixture;
-import oap.testng.Fixtures;
-import oap.testng.TestDirectory;
+import oap.testng.*;
 import oap.util.Cuid;
+import org.joda.time.DateTimeUtils;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -55,7 +57,8 @@ public class StatsDBTest extends Fixtures {
 
     {
         fixture(MONGO_FIXTURE);
-        fixture(TestDirectory.FIXTURE);
+        fixture(TestDirectoryFixture.FIXTURE);
+        fixture(SystemTimerFixture.FIXTURE);
     }
 
     @Test
@@ -207,9 +210,16 @@ public class StatsDBTest extends Fixtures {
 
     @Test
     public void version() {
+        DateTimeUtils.setCurrentMillisFixed(100);
+
         var uid = Cuid.incremental(0);
-        try (StatsDBMaster master = new StatsDBMaster(schema2, StatsDBStorage.NULL);
-             StatsDBNode node = new StatsDBNode(schema2, new StatsDBTransportMock(master), uid)) {
+        var port = Env.port("ver");
+        try (var master = new StatsDBMaster(schema2, StatsDBStorage.NULL);
+             var messageServer = new MessageServer(TestDirectoryFixture.testPath("mserv"), port, List.of(new StatsDBMessageListener(master)), -1);
+             var messageSender = new MessageSender("localhost", port, TestDirectoryFixture.testPath("msend"));
+             var node = new StatsDBNode(schema2, new StatsDBTransportMessage(messageSender), uid)) {
+            messageServer.start();
+            messageSender.start();
 
             uid.reset(0);
 
@@ -218,7 +228,7 @@ public class StatsDBTest extends Fixtures {
             assertThat(master.<MockChild2>get("k1").vc).isEqualTo(20L);
 
             uid.reset(0);
-            node.<MockChild2>update("k1", c -> c.vc += 21);
+            node.<MockChild2>update("k1", c -> c.vc += 20);
             node.sync();
             assertThat(master.<MockChild2>get("k1").vc).isEqualTo(20L);
         }

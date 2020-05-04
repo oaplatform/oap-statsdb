@@ -30,6 +30,7 @@
     </appender>
 
     <logger name="org.mongodb" level="ERROR" />
+    <logger name="oap.concurrent.scheduler.RunnableJob" level="ERROR" />
     <logger name="org.quartz" additivity="false">
         <level value="ERROR"/>
     </logger>

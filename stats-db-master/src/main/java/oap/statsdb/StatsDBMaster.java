@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import oap.concurrent.scheduler.Scheduled;
 import oap.concurrent.scheduler.Scheduler;
 import oap.io.Closeables;
+import oap.util.Dates;
 import oap.util.Lists;
 import oap.util.MemoryMeter;
 
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
+    public final long memoryUsageScheduler = Dates.m(10);
     private final StatsDBStorage storage;
     private final MultiGauge statsdb_memory_usage;
     private final Scheduled scheduled;
@@ -52,10 +54,9 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         init(db.values());
 
         var memoryMeter = MemoryMeter.get();
-
+        
         statsdb_memory_usage = MultiGauge.builder("statsdb_memory_usage").register(Metrics.globalRegistry);
-
-        scheduled = Scheduler.scheduleWithFixedDelay(10, TimeUnit.MINUTES, () ->
+        scheduled = Scheduler.scheduleWithFixedDelay(memoryUsageScheduler, TimeUnit.MILLISECONDS, () ->
                 statsdb_memory_usage.register(List.of(MultiGauge.Row.of(Tags.empty(), memoryMeter.measureDeep(db))), true));
     }
 

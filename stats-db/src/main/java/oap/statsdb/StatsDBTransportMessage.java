@@ -18,6 +18,7 @@ public class StatsDBTransportMessage implements StatsDBTransport {
 
     @Override
     public CompletableFuture<?> send(RemoteStatsDB.Sync sync) {
+        System.out.println(sync);
         return sender.sendJson(MESSAGE_TYPE, sync);
     }
 }
