@@ -54,7 +54,8 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
             var snapshot = snapshot();
             if (!snapshot.isEmpty()) {
                 var sync = new Sync(snapshot, timestamp.next());
-                transport.send(sync).get();
+                var status = transport.send(sync).get();
+                log.trace("status = {}", status);
             }
 
             lastSyncSuccess = true;

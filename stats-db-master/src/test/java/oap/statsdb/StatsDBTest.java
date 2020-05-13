@@ -47,10 +47,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class StatsDBTest extends Fixtures {
 
     private static final MongoFixture MONGO_FIXTURE = new MongoFixture();
-    private static final NodeSchema schema2 = new NodeSchema(
+    static final NodeSchema schema2 = new NodeSchema(
             nc("n1", MockChild2.class),
             nc("n2", MockValue.class));
-    private static final NodeSchema schema3 = new NodeSchema(
+    static final NodeSchema schema3 = new NodeSchema(
             nc("n1", MockChild1.class),
             nc("n2", MockChild2.class),
             nc("n3", MockValue.class));
