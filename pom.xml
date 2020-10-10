@@ -30,14 +30,14 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>13</maven.compiler.source>
-        <maven.compiler.target>13</maven.compiler.target>
+        <maven.compiler.source>15</maven.compiler.source>
+        <maven.compiler.target>15</maven.compiler.target>
 
-        <revision>2.2.13</revision>
+        <revision>3.0.0</revision>
 
-        <oap.version>7.0.14</oap.version>
-        <oap.storage.version>6.8.6</oap.storage.version>
-        <lombok.version>1.18.12</lombok.version>
+        <oap.version>8.0.0</oap.version>
+        <oap.storage.version>8.0.0</oap.storage.version>
+        <lombok.version>1.18.14</lombok.version>
     </properties>
 
     <dependencies>
@@ -54,7 +54,6 @@
                     <compilerArgs>
                         <arg>-parameters</arg>
                         <arg>-Xlint:unchecked</arg>
-                        <arg>--enable-preview</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
