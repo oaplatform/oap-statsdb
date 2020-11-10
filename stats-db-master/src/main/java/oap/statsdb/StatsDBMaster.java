@@ -24,27 +24,16 @@
 
 package oap.statsdb;
 
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.MultiGauge;
-import io.micrometer.core.instrument.Tags;
 import lombok.extern.slf4j.Slf4j;
-import oap.concurrent.scheduler.Scheduled;
-import oap.concurrent.scheduler.Scheduler;
-import oap.io.Closeables;
-import oap.util.Dates;
 import oap.util.Lists;
 import oap.util.MemoryMeter;
 
 import java.io.Closeable;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
-    public final long memoryUsageScheduler = Dates.m(10);
     private final StatsDBStorage storage;
-    private final MultiGauge statsdb_memory_usage;
-    private final Scheduled scheduled;
 
     public StatsDBMaster(NodeSchema schema, StatsDBStorage storage) {
         super(schema);
@@ -54,10 +43,6 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         init(db.values());
 
         var memoryMeter = MemoryMeter.get();
-        
-        statsdb_memory_usage = MultiGauge.builder("statsdb_memory_usage").register(Metrics.globalRegistry);
-        scheduled = Scheduler.scheduleWithFixedDelay(memoryUsageScheduler, TimeUnit.MILLISECONDS, () ->
-                statsdb_memory_usage.register(List.of(MultiGauge.Row.of(Tags.empty(), memoryMeter.measureDeep(db))), true));
     }
 
     private void merge(String key, Node masterNode, Node rNode, List<List<String>> retList, int level) {
@@ -140,7 +125,6 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
 
     @Override
     public void close() {
-        Closeables.close(scheduled);
         storage.store(schema, db);
     }
 
