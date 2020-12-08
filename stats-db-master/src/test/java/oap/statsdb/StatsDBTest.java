@@ -55,10 +55,15 @@ public class StatsDBTest extends Fixtures {
             nc("n2", MockChild2.class),
             nc("n3", MockValue.class));
 
+    private EnvFixture envFixture;
+
     {
+        envFixture = new EnvFixture();
+
         fixture(MONGO_FIXTURE);
         fixture(TestDirectoryFixture.FIXTURE);
         fixture(SystemTimerFixture.FIXTURE);
+        fixture(envFixture);
     }
 
     @Test
@@ -213,7 +218,7 @@ public class StatsDBTest extends Fixtures {
         DateTimeUtils.setCurrentMillisFixed(100);
 
         var uid = Cuid.incremental(0);
-        var port = Env.port("ver");
+        var port = envFixture.portFor("ver");
         try (var master = new StatsDBMaster(schema2, StatsDBStorage.NULL);
              var messageServer = new MessageServer(TestDirectoryFixture.testPath("mserv"), port, List.of(new StatsDBMessageListener(master)), -1);
              var messageSender = new MessageSender("localhost", port, TestDirectoryFixture.testPath("msend"));
