@@ -33,10 +33,10 @@
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
 
-        <revision>3.0.1</revision>
+        <revision>3.0.2</revision>
 
-        <oap.version>8.0.16</oap.version>
-        <oap.storage.version>8.0.5</oap.storage.version>
+        <oap.version>8.3.0</oap.version>
+        <oap.storage.version>8.1.2</oap.storage.version>
         <lombok.version>1.18.14</lombok.version>
     </properties>
 
