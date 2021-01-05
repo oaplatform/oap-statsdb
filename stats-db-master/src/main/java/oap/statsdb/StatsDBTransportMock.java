@@ -3,7 +3,6 @@ package oap.statsdb;
 import oap.net.Inet;
 
 import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -23,14 +22,12 @@ public class StatsDBTransportMock implements StatsDBTransport {
     }
 
     @Override
-    public CompletableFuture<?> send(RemoteStatsDB.Sync sync) {
+    public void sendAsync(RemoteStatsDB.Sync sync) {
         if (exceptionFunc != null) throw exceptionFunc.apply(sync);
 
         syncs.add(sync);
 
-        return CompletableFuture.runAsync(() -> {
-            if (master != null) master.update(sync, Inet.HOSTNAME);
-        });
+        if (master != null) master.update(sync, Inet.HOSTNAME);
     }
 
     public void syncWithException(Function<RemoteStatsDB.Sync, RuntimeException> exceptionFunc) {

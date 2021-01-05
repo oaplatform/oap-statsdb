@@ -230,11 +230,13 @@ public class StatsDBTest extends Fixtures {
 
             node.<MockChild2>update("k1", c -> c.vc += 20);
             node.sync();
+            messageSender.syncMemory();
             assertThat(master.<MockChild2>get("k1").vc).isEqualTo(20L);
 
             uid.reset(0);
             node.<MockChild2>update("k1", c -> c.vc += 20);
             node.sync();
+            messageSender.syncMemory();
             assertThat(master.<MockChild2>get("k1").vc).isEqualTo(20L);
         }
     }
