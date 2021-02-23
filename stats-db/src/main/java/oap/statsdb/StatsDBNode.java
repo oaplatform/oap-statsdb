@@ -27,14 +27,16 @@ package oap.statsdb;
 import lombok.extern.slf4j.Slf4j;
 import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Cuid;
-import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.io.Closeable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 @Slf4j
-public class StatsDBNode extends StatsDB implements Runnable, Closeable {
+public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
+    public final ConcurrentHashMap<NodeId, Node> nodes = new ConcurrentHashMap<>();
+    protected final NodeSchema schema;
     private final StatsDBTransport transport;
     private final Cuid timestamp;
     protected boolean lastSyncSuccess = false;
@@ -44,7 +46,7 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
     }
 
     public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Cuid timestamp) {
-        super(schema);
+        this.schema = schema;
         this.transport = transport;
         this.timestamp = timestamp;
     }
@@ -64,15 +66,11 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
         }
     }
 
-    private Map<String, Node> snapshot() {
-        var ret = new HashMap<String, Node>();
-        var mnode = new MutableObject<Node>();
-        for (var entry : db.entrySet()) {
-            db.compute(entry.getKey(), (k, v) -> {
-                mnode.setValue(v);
-                return null;
-            });
-            ret.put(entry.getKey(), mnode.getValue());
+    private ArrayList<Sync.NodeIdNode> snapshot() {
+        var ret = new ArrayList<Sync.NodeIdNode>();
+        for (var entry : nodes.entrySet()) {
+            ret.add(new Sync.NodeIdNode(entry.getKey(), entry.getValue()));
+            nodes.remove(entry.getKey());
         }
 
         return ret;
@@ -85,7 +83,24 @@ public class StatsDBNode extends StatsDB implements Runnable, Closeable {
 
     @Override
     public synchronized void removeAll() {
-        super.removeAll();
+        nodes.clear();
+    }
+
+    @Override
+    protected <V extends Node.Value<V>> void update(String[] keys, Consumer<V> update) {
+        nodes.compute(new NodeId(keys), (nid, n) -> {
+            if (n == null) n = new Node(schema.get(keys.length - 1).newInstance());
+            n.updateValue(update);
+
+            return n;
+        });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <V extends Node.Value<V>> V get(String... key) {
+        var node = nodes.get(new NodeId(key));
+        return node != null ? (V) node.v : null;
     }
 
     @Override

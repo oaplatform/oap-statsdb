@@ -27,21 +27,22 @@ package oap.statsdb;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.ToString;
-import org.joda.time.DateTimeUtils;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.Map;
+import java.util.ArrayList;
 
 public interface RemoteStatsDB {
     @ToString
     class Sync implements Serializable {
+        @Serial
         private static final long serialVersionUID = 6835215675536753051L;
 
-        public final Map<String, Node> data;
+        public final ArrayList<NodeIdNode> data;
         public final String id;
 
         @JsonCreator
-        public Sync(Map<String, Node> data, String id) {
+        public Sync(ArrayList<NodeIdNode> data, String id) {
             this.data = data;
             this.id = id;
         }
@@ -49,6 +50,21 @@ public interface RemoteStatsDB {
         @JsonIgnore
         public final boolean isEmpty() {
             return data.isEmpty();
+        }
+
+        @ToString
+        static class NodeIdNode implements Serializable {
+            @Serial
+            private static final long serialVersionUID = 1612321099236706698L;
+            
+            public final NodeId nodeId;
+            public final Node node;
+
+            @JsonCreator
+            public NodeIdNode(NodeId nodeId, Node node) {
+                this.nodeId = nodeId;
+                this.node = node;
+            }
         }
     }
 }

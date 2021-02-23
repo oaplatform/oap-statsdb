@@ -27,6 +27,7 @@ package oap.statsdb;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import com.google.common.base.Preconditions;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ import oap.json.TypeIdFactory;
 import oap.util.Mergeable;
 import org.joda.time.DateTimeUtils;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +68,14 @@ public class Node implements Serializable {
         this.mt = mt;
         this.ct = ct;
         this.v = v;
+    }
+
+    public void set(@Nonnull Node node) {
+        Preconditions.checkNotNull(node);
+
+        this.mt = node.mt;
+        this.ct = node.ct;
+        this.v = node.v;
     }
 
     @SuppressWarnings("unchecked")

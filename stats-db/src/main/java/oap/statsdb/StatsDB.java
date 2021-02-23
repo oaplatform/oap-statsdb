@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-public abstract class StatsDB {
+public abstract class StatsDB extends IStatsDB {
     protected final NodeSchema schema;
     protected volatile ConcurrentHashMap<String, Node> db = new ConcurrentHashMap<>();
 
@@ -68,7 +68,7 @@ public abstract class StatsDB {
         var rootKey = key[0];
 
         db.compute(rootKey, (k, n) -> {
-            if(n == null) {
+            if (n == null) {
                 n = new Node(schema.get(0).newInstance());
             }
 

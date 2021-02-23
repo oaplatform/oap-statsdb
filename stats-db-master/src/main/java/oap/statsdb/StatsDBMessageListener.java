@@ -30,7 +30,7 @@ public class StatsDBMessageListener implements MessageListener {
 
     @Override
     public short run(int version, String hostName, int size, byte[] data) {
-        var sync = Binder.json.<RemoteStatsDB.Sync>unmarshal(RemoteStatsDB.Sync.class, new ByteArrayInputStream(data));
+        var sync = Binder.json.unmarshal(RemoteStatsDB.Sync.class, new ByteArrayInputStream(data));
         master.update(sync, hostName);
 
         return MessageProtocol.STATUS_OK;

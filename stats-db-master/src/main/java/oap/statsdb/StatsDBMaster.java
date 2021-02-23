@@ -25,6 +25,7 @@
 package oap.statsdb;
 
 import lombok.extern.slf4j.Slf4j;
+import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Lists;
 import oap.util.MemoryMeter;
 
@@ -77,12 +78,14 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         return retList;
     }
 
-    private List<List<String>> merge(Map<String, Node> remoteDB) {
+    private List<List<String>> merge(ArrayList<Sync.NodeIdNode> remoteDB) {
         assert remoteDB != null;
 
         var retList = new ArrayList<List<String>>();
 
-        remoteDB.forEach((key, rnode) -> {
+        var remoteDbTree = toTree(remoteDB);
+
+        remoteDbTree.forEach((key, rnode) -> {
             var mnode = db.computeIfAbsent(key, k -> new Node(schema.get(0).newInstance()));
 
             merge(key, mnode, rnode, retList, 0);
@@ -90,6 +93,26 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         });
 
         return retList;
+    }
+
+    private Map<String, Node> toTree(ArrayList<Sync.NodeIdNode> remoteDB) {
+        var ret = new HashMap<String, Node>();
+
+        for (var nodeIdNode : remoteDB) {
+            var node = nodeIdNode.node;
+            var nodeId = nodeIdNode.nodeId;
+
+            Node treeNode = null;
+            for (var i = 0; i < nodeId.size(); i++) {
+                var key = nodeId.get(i);
+                var finalI = i;
+                treeNode = (treeNode != null ? treeNode.db : ret).computeIfAbsent(key, k -> new Node(schema.get(finalI).newInstance()));
+            }
+
+            treeNode.set(node);
+        }
+
+        return ret;
     }
 
     @SuppressWarnings("unchecked")
@@ -102,7 +125,7 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         });
     }
 
-    public boolean update(RemoteStatsDB.Sync sync, String host) {
+    public boolean update(Sync sync, String host) {
         assert sync != null;
         assert sync.data != null;
 
