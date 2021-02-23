@@ -68,7 +68,7 @@ public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
 
     private ArrayList<Sync.NodeIdNode> snapshot() {
         var ret = new ArrayList<Sync.NodeIdNode>();
-        for (var entry : nodes.entrySet()) {
+        for (var entry : new ArrayList<>(nodes.entrySet())) {
             ret.add(new Sync.NodeIdNode(entry.getKey(), entry.getValue()));
             nodes.remove(entry.getKey());
         }
