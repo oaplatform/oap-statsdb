@@ -21,28 +21,28 @@ class JsonNodeCodec implements Codec<MongoNode> {
     private ObjectWriter fileWriter;
     private ObjectReader fileReader;
 
-    public JsonNodeCodec() {
+    JsonNodeCodec() {
         this.documentCodec = new DocumentCodec();
         var ref = new TypeRef<MongoNode>() {
         };
-        this.fileReader = Binder.json.readerFor(ref);
-        this.fileWriter = Binder.json.writerFor(ref);
+        this.fileReader = Binder.json.readerFor( ref );
+        this.fileWriter = Binder.json.writerFor( ref );
     }
 
     @SneakyThrows
     @Override
-    public MongoNode decode(BsonReader bsonReader, DecoderContext decoderContext) {
-        var doc = documentCodec.decode(bsonReader, decoderContext);
+    public MongoNode decode( BsonReader bsonReader, DecoderContext decoderContext ) {
+        var doc = documentCodec.decode( bsonReader, decoderContext );
 
-        return fileReader.readValue(Binder.json.marshal(doc));
+        return fileReader.readValue( Binder.json.marshal( doc ) );
     }
 
     @SneakyThrows
     @Override
-    public void encode(BsonWriter bsonWriter, MongoNode data, EncoderContext encoderContext) {
-        var doc = Document.parse(fileWriter.writeValueAsString(data));
+    public void encode( BsonWriter bsonWriter, MongoNode data, EncoderContext encoderContext ) {
+        var doc = Document.parse( fileWriter.writeValueAsString( data ) );
 
-        documentCodec.encode(bsonWriter, doc, encoderContext);
+        documentCodec.encode( bsonWriter, doc, encoderContext );
     }
 
     @Override

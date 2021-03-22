@@ -36,6 +36,7 @@ import oap.util.Mergeable;
 import org.joda.time.DateTimeUtils;
 
 import javax.annotation.Nonnull;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -46,71 +47,72 @@ import java.util.function.Consumer;
 @ToString
 @Slf4j
 public class Node implements Serializable {
+    @Serial
     private static final long serialVersionUID = 4194048067764234L;
 
     public volatile ConcurrentHashMap<String, Node> db = new ConcurrentHashMap<>();
-    @JsonTypeIdResolver(TypeIdFactory.class)
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "o:t")
+    @JsonTypeIdResolver( TypeIdFactory.class )
+    @JsonTypeInfo( use = JsonTypeInfo.Id.CUSTOM, property = "o:t" )
     public Value v;
     public long ct;
     public long mt;
 
-    public Node(Value v) {
-        this(DateTimeUtils.currentTimeMillis(), v);
+    public Node( Value v ) {
+        this( DateTimeUtils.currentTimeMillis(), v );
     }
 
-    public Node(long ct, Value v) {
-        this(ct, ct, v);
+    public Node( long ct, Value v ) {
+        this( ct, ct, v );
     }
 
     @JsonCreator
-    public Node(long mt, long ct, Value v) {
+    public Node( long mt, long ct, Value v ) {
         this.mt = mt;
         this.ct = ct;
         this.v = v;
     }
 
-    public void set(@Nonnull Node node) {
-        Preconditions.checkNotNull(node);
+    public void set( @Nonnull Node node ) {
+        Preconditions.checkNotNull( node );
 
         this.mt = node.mt;
         this.ct = node.ct;
         this.v = node.v;
     }
 
-    @SuppressWarnings("unchecked")
-    synchronized <V extends Value<V>> void updateValue(Consumer<V> update) {
+    @SuppressWarnings( "unchecked" )
+    synchronized <V extends Value<V>> void updateValue( Consumer<V> update ) {
         assert v != null;
-        update.accept((V) v);
+        update.accept( ( V ) v );
         this.mt = DateTimeUtils.currentTimeMillis();
     }
 
-    @SuppressWarnings("unchecked")
-    public <V extends Value<V>> V get(Iterator<String> key) {
+    @SuppressWarnings( "unchecked" )
+    public <V extends Value<V>> V get( Iterator<String> key ) {
         Node obj = this;
 
-        while (key.hasNext()) {
+        while( key.hasNext() ) {
             var item = key.next();
 
-            if (obj == null) return null;
+            if( obj == null ) return null;
 
-            obj = obj.db.get(item);
+            obj = obj.db.get( item );
         }
 
-        if (obj == null) return null;
+        if( obj == null ) return null;
 
-        return (V) obj.v;
+        return ( V ) obj.v;
     }
 
-    @SuppressWarnings("unchecked")
-    public boolean merge(Node node) {
+    @SuppressWarnings( "unchecked" )
+    public boolean merge( Node node ) {
         mt = DateTimeUtils.currentTimeMillis();
-        if (v == null) v = node.v;
+        if( v == null ) v = node.v;
         else {
             try {
-                if (node.v != null) v.merge(node.v);
-            } catch (Throwable t) {
-                log.error(t.getMessage(), t);
+                if( node.v != null ) v.merge( node.v );
+            } catch( Throwable t ) {
+                log.error( t.getMessage(), t );
 
                 return false;
             }
@@ -122,6 +124,6 @@ public class Node implements Serializable {
     }
 
     public interface Container<T extends Value<T>, TChild extends Value<TChild>> extends Value<T> {
-        T aggregate(List<TChild> children);
+        T aggregate( List<TChild> children );
     }
 }

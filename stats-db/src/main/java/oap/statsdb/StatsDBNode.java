@@ -41,11 +41,11 @@ public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
     private final Cuid timestamp;
     protected boolean lastSyncSuccess = false;
 
-    public StatsDBNode(NodeSchema schema, StatsDBTransport transport) {
-        this(schema, transport, Cuid.UNIQUE);
+    public StatsDBNode( NodeSchema schema, StatsDBTransport transport ) {
+        this( schema, transport, Cuid.UNIQUE );
     }
 
-    public StatsDBNode(NodeSchema schema, StatsDBTransport transport, Cuid timestamp) {
+    public StatsDBNode( NodeSchema schema, StatsDBTransport transport, Cuid timestamp ) {
         this.schema = schema;
         this.transport = transport;
         this.timestamp = timestamp;
@@ -54,23 +54,23 @@ public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
     public synchronized void sync() {
         try {
             var snapshot = snapshot();
-            if (!snapshot.isEmpty()) {
-                var sync = new Sync(snapshot, timestamp.next());
-                transport.sendAsync(sync);
+            if( !snapshot.isEmpty() ) {
+                var sync = new Sync( snapshot, timestamp.next() );
+                transport.sendAsync( sync );
             }
 
             lastSyncSuccess = true;
-        } catch (Exception e) {
+        } catch( Exception e ) {
             lastSyncSuccess = false;
-            log.error(e.getMessage(), e);
+            log.error( e.getMessage(), e );
         }
     }
 
     private ArrayList<Sync.NodeIdNode> snapshot() {
         var ret = new ArrayList<Sync.NodeIdNode>();
-        for (var entry : new ArrayList<>(nodes.entrySet())) {
-            ret.add(new Sync.NodeIdNode(entry.getKey(), entry.getValue()));
-            nodes.remove(entry.getKey());
+        for( var entry : new ArrayList<>( nodes.entrySet() ) ) {
+            ret.add( new Sync.NodeIdNode( entry.getKey(), entry.getValue() ) );
+            nodes.remove( entry.getKey() );
         }
 
         return ret;
@@ -87,25 +87,25 @@ public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
     }
 
     @Override
-    protected <V extends Node.Value<V>> void update(String[] keys, Consumer<V> update) {
-        nodes.compute(new NodeId(keys), (nid, n) -> {
-            if (n == null) n = new Node(schema.get(keys.length - 1).newInstance());
-            n.updateValue(update);
+    protected <V extends Node.Value<V>> void update( String[] keys, Consumer<V> update ) {
+        nodes.compute( new NodeId( keys ), ( nid, n ) -> {
+            if( n == null ) n = new Node( schema.get( keys.length - 1 ).newInstance() );
+            n.updateValue( update );
 
             return n;
-        });
+        } );
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <V extends Node.Value<V>> V get(String... key) {
-        var node = nodes.get(new NodeId(key));
-        return node != null ? (V) node.v : null;
+    @SuppressWarnings( "unchecked" )
+    public <V extends Node.Value<V>> V get( String... key ) {
+        var node = nodes.get( new NodeId( key ) );
+        return node != null ? ( V ) node.v : null;
     }
 
     @Override
     public void close() {
-        log.info("close");
+        log.info( "close" );
         sync();
     }
 }

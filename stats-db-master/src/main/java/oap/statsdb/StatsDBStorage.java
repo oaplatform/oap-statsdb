@@ -32,9 +32,9 @@ import java.util.Map;
 public interface StatsDBStorage {
     StatsDBStorage NULL = new StatsDBStorageNull();
 
-    Map<String, Node> load(NodeSchema schema);
+    Map<String, Node> load( NodeSchema schema );
 
-    void store(NodeSchema schema, Map<String, Node> db);
+    void store( NodeSchema schema, Map<String, Node> db );
 
     void removeAll();
 }

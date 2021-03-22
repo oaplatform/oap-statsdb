@@ -14,7 +14,7 @@ import static oap.statsdb.StatsDBTransportMessage.MESSAGE_TYPE;
 public class StatsDBMessageListener implements MessageListener {
     private final StatsDBMaster master;
 
-    public StatsDBMessageListener(StatsDBMaster master) {
+    public StatsDBMessageListener( StatsDBMaster master ) {
         this.master = master;
     }
 
@@ -29,9 +29,9 @@ public class StatsDBMessageListener implements MessageListener {
     }
 
     @Override
-    public short run(int version, String hostName, int size, byte[] data) {
-        var sync = Binder.json.unmarshal(RemoteStatsDB.Sync.class, new ByteArrayInputStream(data));
-        master.update(sync, hostName);
+    public short run( int version, String hostName, int size, byte[] data ) {
+        var sync = Binder.json.unmarshal( RemoteStatsDB.Sync.class, new ByteArrayInputStream( data ) );
+        master.update( sync, hostName );
 
         return MessageProtocol.STATUS_OK;
     }

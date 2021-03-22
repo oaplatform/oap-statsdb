@@ -14,23 +14,23 @@ public class StatsDBTransportMock implements StatsDBTransport {
     private Function<RemoteStatsDB.Sync, RuntimeException> exceptionFunc;
 
     public StatsDBTransportMock() {
-        this(null);
+        this( null );
     }
 
-    public StatsDBTransportMock(StatsDBMaster master) {
+    public StatsDBTransportMock( StatsDBMaster master ) {
         this.master = master;
     }
 
     @Override
-    public void sendAsync(RemoteStatsDB.Sync sync) {
-        if (exceptionFunc != null) throw exceptionFunc.apply(sync);
+    public void sendAsync( RemoteStatsDB.Sync sync ) {
+        if( exceptionFunc != null ) throw exceptionFunc.apply( sync );
 
-        syncs.add(sync);
+        syncs.add( sync );
 
-        if (master != null) master.update(sync, Inet.HOSTNAME);
+        if( master != null ) master.update( sync, Inet.HOSTNAME );
     }
 
-    public void syncWithException(Function<RemoteStatsDB.Sync, RuntimeException> exceptionFunc) {
+    public void syncWithException( Function<RemoteStatsDB.Sync, RuntimeException> exceptionFunc ) {
         this.exceptionFunc = exceptionFunc;
     }
 

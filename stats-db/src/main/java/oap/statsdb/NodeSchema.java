@@ -34,7 +34,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 
-@ToString(callSuper = true)
+@ToString( callSuper = true )
 public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> implements Serializable {
     private static final long serialVersionUID = 1625813602788861879L;
 
@@ -44,19 +44,19 @@ public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> implemen
     }
 
     @SafeVarargs
-    public NodeSchema(NodeConfiguration<? extends Node.Value>... confs) {
-        this(asList(confs));
+    public NodeSchema( NodeConfiguration<? extends Node.Value>... confs ) {
+        this( asList( confs ) );
     }
 
-    public NodeSchema(List<NodeConfiguration<? extends Node.Value>> confs) {
-        super(confs);
-        for (var c : confs) {
-            cons.put(c.key, c.clazz);
+    public NodeSchema( List<NodeConfiguration<? extends Node.Value>> confs ) {
+        super( confs );
+        for( var c : confs ) {
+            cons.put( c.key, c.clazz );
         }
     }
 
-    public static <T extends Node.Value> NodeConfiguration<T> nc(String key, Class<T> clazz) {
-        return new NodeConfiguration<>(key, clazz);
+    public static <T extends Node.Value> NodeConfiguration<T> nc( String key, Class<T> clazz ) {
+        return new NodeConfiguration<>( key, clazz );
     }
 
     @ToString
@@ -66,7 +66,7 @@ public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> implemen
         public final String key;
         public final Class<T> clazz;
 
-        public NodeConfiguration(String key, Class<T> clazz) {
+        public NodeConfiguration( String key, Class<T> clazz ) {
             this.key = key;
             this.clazz = clazz;
         }

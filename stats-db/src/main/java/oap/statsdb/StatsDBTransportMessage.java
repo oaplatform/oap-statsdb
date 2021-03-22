@@ -1,5 +1,6 @@
 package oap.statsdb;
 
+import oap.io.content.ContentWriter;
 import oap.message.MessageSender;
 
 /**
@@ -10,12 +11,12 @@ public class StatsDBTransportMessage implements StatsDBTransport {
 
     private final MessageSender sender;
 
-    public StatsDBTransportMessage(MessageSender sender) {
+    public StatsDBTransportMessage( MessageSender sender ) {
         this.sender = sender;
     }
 
     @Override
-    public void sendAsync(RemoteStatsDB.Sync sync) {
-        sender.sendJson(MESSAGE_TYPE, sync);
+    public void sendAsync( RemoteStatsDB.Sync sync ) {
+        sender.send( MESSAGE_TYPE, sync, ContentWriter.ofJson() );
     }
 }

@@ -42,7 +42,7 @@ public interface RemoteStatsDB {
         public final String id;
 
         @JsonCreator
-        public Sync(ArrayList<NodeIdNode> data, String id) {
+        public Sync( ArrayList<NodeIdNode> data, String id ) {
             this.data = data;
             this.id = id;
         }
@@ -56,12 +56,12 @@ public interface RemoteStatsDB {
         static class NodeIdNode implements Serializable {
             @Serial
             private static final long serialVersionUID = 1612321099236706698L;
-            
+
             public final NodeId nodeId;
             public final Node node;
 
             @JsonCreator
-            public NodeIdNode(NodeId nodeId, Node node) {
+            NodeIdNode( NodeId nodeId, Node node ) {
                 this.nodeId = nodeId;
                 this.node = node;
             }

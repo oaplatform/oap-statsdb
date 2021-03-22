@@ -6,7 +6,11 @@ import lombok.ToString;
 import javax.annotation.Nonnull;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 
 /**
@@ -22,12 +26,12 @@ public class NodeId implements Serializable, Iterable<String> {
     public NodeId() {
     }
 
-    public NodeId(List<String> keys) {
-        this.keys.addAll(keys);
+    public NodeId( List<String> keys ) {
+        this.keys.addAll( keys );
     }
 
-    public NodeId(String... keys) {
-        Collections.addAll(this.keys, keys);
+    public NodeId( String... keys ) {
+        Collections.addAll( this.keys, keys );
     }
 
     @Override
@@ -37,8 +41,8 @@ public class NodeId implements Serializable, Iterable<String> {
     }
 
     @Override
-    public void forEach(Consumer<? super String> action) {
-        keys.forEach(action);
+    public void forEach( Consumer<? super String> action ) {
+        keys.forEach( action );
     }
 
     @Override
@@ -50,7 +54,7 @@ public class NodeId implements Serializable, Iterable<String> {
         return keys.size();
     }
 
-    public String get(int index) {
-        return keys.get(index);
+    public String get( int index ) {
+        return keys.get( index );
     }
 }
