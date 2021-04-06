@@ -34,6 +34,7 @@ import oap.testng.EnvFixture;
 import oap.testng.Fixtures;
 import oap.testng.SystemTimerFixture;
 import oap.testng.TestDirectoryFixture;
+import oap.time.JavaTimeService;
 import oap.util.Cuid;
 import org.joda.time.DateTimeUtils;
 import org.testng.annotations.Test;
@@ -223,7 +224,7 @@ public class StatsDBTest extends Fixtures {
         var port = envFixture.portFor( "ver" );
         try( var master = new StatsDBMaster( schema2, StatsDBStorage.NULL );
              var messageServer = new MessageServer( TestDirectoryFixture.testPath( "mserv" ), port, List.of( new StatsDBMessageListener( master ) ), -1 );
-             var messageSender = new MessageSender( "localhost", port, TestDirectoryFixture.testPath( "msend" ) );
+             var messageSender = new MessageSender( JavaTimeService.INSTANCE, "localhost", port, TestDirectoryFixture.testPath( "msend" ) );
              var node = new StatsDBNode( schema2, new StatsDBTransportMessage( messageSender ), uid ) ) {
             messageServer.start();
             messageSender.start();

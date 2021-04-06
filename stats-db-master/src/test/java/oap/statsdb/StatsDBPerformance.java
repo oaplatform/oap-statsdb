@@ -9,6 +9,7 @@ import oap.testng.Env;
 import oap.testng.Fixtures;
 import oap.testng.SystemTimerFixture;
 import oap.testng.TestDirectoryFixture;
+import oap.time.JavaTimeService;
 import oap.util.Cuid;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -43,7 +44,7 @@ public class StatsDBPerformance extends Fixtures {
 
             try( var master = new StatsDBMaster( StatsDBTest.schema3, StatsDBStorage.NULL );
                  var messageServer = new MessageServer( TestDirectoryFixture.testPath( "mserv" ), port, List.of( new StatsDBMessageListener( master ) ), -1 );
-                 var messageSender = new MessageSender( "localhost", port, TestDirectoryFixture.testPath( "msend" ) );
+                 var messageSender = new MessageSender( JavaTimeService.INSTANCE, "localhost", port, TestDirectoryFixture.testPath( "msend" ) );
                  var node = new StatsDBNode( StatsDBTest.schema3, new StatsDBTransportMessage( messageSender ), uid );
                  var ignored = Scheduler.scheduleWithFixedDelay( 100, TimeUnit.MILLISECONDS, node::sync ) ) {
                 messageServer.start();
