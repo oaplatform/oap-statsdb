@@ -1,5 +1,6 @@
 package oap.statsdb;
 
+import com.google.common.base.Preconditions;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -28,10 +29,17 @@ public class NodeId implements Serializable, Iterable<String> {
 
     public NodeId( List<String> keys ) {
         this.keys.addAll( keys );
+
+        validate( this.keys );
     }
 
     public NodeId( String... keys ) {
         Collections.addAll( this.keys, keys );
+        validate( this.keys );
+    }
+
+    private static void validate( ArrayList<String> keys ) {
+        for( var key : keys ) Preconditions.checkNotNull( key );
     }
 
     @Override
