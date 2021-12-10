@@ -34,14 +34,14 @@
     <parent>
         <groupId>oap</groupId>
         <artifactId>oap-stats-db-parent</artifactId>
-        <version>${oap.statsdb.project.version}</version>
+        <version>${oap-statsdb.project.version}</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>oap</groupId>
             <artifactId>oap-stats-db</artifactId>
-            <version>${oap.statsdb.project.version}</version>
+            <version>${oap-statsdb.project.version}</version>
         </dependency>
 
         <dependency>
