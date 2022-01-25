@@ -27,21 +27,24 @@ package oap.statsdb;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import oap.http.server.nio.NioHttpServer;
+import oap.message.MessageHttpHandler;
 import oap.message.MessageSender;
-import oap.message.MessageServer;
 import oap.storage.mongo.memory.MongoFixture;
 import oap.testng.EnvFixture;
 import oap.testng.Fixtures;
 import oap.testng.SystemTimerFixture;
 import oap.testng.TestDirectoryFixture;
-import oap.time.JavaTimeService;
 import oap.util.Cuid;
 import org.joda.time.DateTimeUtils;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 import static oap.statsdb.NodeSchema.nc;
+import static oap.testng.TestDirectoryFixture.testPath;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -217,29 +220,34 @@ public class StatsDBTest extends Fixtures {
     }
 
     @Test
-    public void version() {
+    public void version() throws IOException {
+        int port = envFixture.portFor( getClass() );
+        Path controlStatePath = testPath( "controlStatePath.st" );
+
         DateTimeUtils.setCurrentMillisFixed( 100 );
 
         var uid = Cuid.incremental( 0 );
-        var port = envFixture.portFor( "ver" );
         try( var master = new StatsDBMaster( schema2, StatsDBStorage.NULL );
-             var messageServer = new MessageServer( TestDirectoryFixture.testPath( "mserv" ), port, List.of( new StatsDBMessageListener( master ) ), -1 );
-             var messageSender = new MessageSender( JavaTimeService.INSTANCE, "localhost", port, TestDirectoryFixture.testPath( "msend" ) );
-             var node = new StatsDBNode( schema2, new StatsDBTransportMessage( messageSender ), uid ) ) {
-            messageServer.start();
-            messageSender.start();
+             var server = new NioHttpServer( port );
+             var messageHttpHandler = new MessageHttpHandler( controlStatePath, List.of( new StatsDBMessageListener( master ) ), -1 );
+             var client = new MessageSender( "localhost", port, TestDirectoryFixture.testPath( "msend" ) );
+             var node = new StatsDBNode( schema2, new StatsDBTransportMessage( client ), uid ) ) {
+            server.bind( "/messages", messageHttpHandler );
+            client.start();
+            server.start();
+            messageHttpHandler.start();
 
             uid.reset( 0 );
 
             node.<MockChild2>update( "k1", c -> c.vc += 20 );
             node.sync();
-            messageSender.syncMemory();
+            client.run();
             assertThat( master.<MockChild2>get( "k1" ).vc ).isEqualTo( 20L );
 
             uid.reset( 0 );
             node.<MockChild2>update( "k1", c -> c.vc += 20 );
             node.sync();
-            messageSender.syncMemory();
+            client.run();
             assertThat( master.<MockChild2>get( "k1" ).vc ).isEqualTo( 20L );
         }
     }

@@ -29,7 +29,7 @@ public class StatsDBMessageListener implements MessageListener {
     }
 
     @Override
-    public short run( int version, String hostName, int size, byte[] data ) {
+    public short run( int version, String hostName, int size, byte[] data, String md5 ) {
         var sync = Binder.json.unmarshal( RemoteStatsDB.Sync.class, new ByteArrayInputStream( data ) );
         master.update( sync, hostName );
 
