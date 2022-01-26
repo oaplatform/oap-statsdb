@@ -229,8 +229,8 @@ public class StatsDBTest extends Fixtures {
         var uid = Cuid.incremental( 0 );
         try( var master = new StatsDBMaster( schema2, StatsDBStorage.NULL );
              var server = new NioHttpServer( port );
-             var messageHttpHandler = new MessageHttpHandler( controlStatePath, List.of( new StatsDBMessageListener( master ) ), -1 );
-             var client = new MessageSender( "localhost", port, TestDirectoryFixture.testPath( "msend" ) );
+             var messageHttpHandler = new MessageHttpHandler( server, "/messages", controlStatePath, List.of( new StatsDBMessageListener( master ) ), -1 );
+             var client = new MessageSender( "localhost", port, "/messages", TestDirectoryFixture.testPath( "msend" ), -1 );
              var node = new StatsDBNode( schema2, new StatsDBTransportMessage( client ), uid ) ) {
             server.bind( "/messages", messageHttpHandler );
             client.start();
@@ -241,13 +241,13 @@ public class StatsDBTest extends Fixtures {
 
             node.<MockChild2>update( "k1", c -> c.vc += 20 );
             node.sync();
-            client.run();
+            client.syncMemory();
             assertThat( master.<MockChild2>get( "k1" ).vc ).isEqualTo( 20L );
 
             uid.reset( 0 );
             node.<MockChild2>update( "k1", c -> c.vc += 20 );
             node.sync();
-            client.run();
+            client.syncMemory();
             assertThat( master.<MockChild2>get( "k1" ).vc ).isEqualTo( 20L );
         }
     }
