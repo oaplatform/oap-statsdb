@@ -29,6 +29,8 @@
         </encoder>
     </appender>
 
+    <logger name="de" level="ERROR" />
+    <logger name="org.xnio" level="ERROR" />
     <logger name="org.mongodb" level="ERROR" />
     <logger name="oap.concurrent.scheduler.RunnableJob" level="ERROR" />
     <logger name="org.quartz" additivity="false">

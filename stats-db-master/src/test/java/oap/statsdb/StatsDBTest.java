@@ -30,6 +30,7 @@ import lombok.ToString;
 import oap.http.server.nio.NioHttpServer;
 import oap.message.MessageHttpHandler;
 import oap.message.MessageSender;
+import oap.message.MessageSenderUtils;
 import oap.storage.mongo.memory.MongoFixture;
 import oap.testng.EnvFixture;
 import oap.testng.Fixtures;
@@ -242,12 +243,14 @@ public class StatsDBTest extends Fixtures {
             node.<MockChild2>update( "k1", c -> c.vc += 20 );
             node.sync();
             client.syncMemory();
+            MessageSenderUtils.waitSendAll( client, 5000, 50 );
             assertThat( master.<MockChild2>get( "k1" ).vc ).isEqualTo( 20L );
 
             uid.reset( 0 );
             node.<MockChild2>update( "k1", c -> c.vc += 20 );
             node.sync();
             client.syncMemory();
+            MessageSenderUtils.waitSendAll( client, 5000, 50 );
             assertThat( master.<MockChild2>get( "k1" ).vc ).isEqualTo( 20L );
         }
     }

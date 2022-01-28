@@ -36,9 +36,9 @@
     </modules>
 
     <properties>
-        <oap-statsdb.project.version>17.5.4.1</oap-statsdb.project.version>
+        <oap-statsdb.project.version>17.5.4.2</oap-statsdb.project.version>
 
-        <oap.deps.oap.version>17.10.5.2</oap.deps.oap.version>
+        <oap.deps.oap.version>17.10.5.7</oap.deps.oap.version>
         <oap.storage.version>17.9.7.2</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.22</oap.deps.lombok.version>
