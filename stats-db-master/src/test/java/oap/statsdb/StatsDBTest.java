@@ -236,7 +236,7 @@ public class StatsDBTest extends Fixtures {
             server.bind( "/messages", messageHttpHandler );
             client.start();
             server.start();
-            messageHttpHandler.start();
+            messageHttpHandler.preStart();
 
             uid.reset( 0 );
 
