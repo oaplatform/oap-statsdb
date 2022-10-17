@@ -39,7 +39,7 @@
         <oap-statsdb.project.version>17.5.4.7</oap-statsdb.project.version>
 
         <oap.deps.oap.version>17.10.30.5</oap.deps.oap.version>
-        <oap.storage.version>17.9.12.1</oap.storage.version>
+        <oap.storage.version>17.9.14.2</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.24</oap.deps.lombok.version>
     </properties>
