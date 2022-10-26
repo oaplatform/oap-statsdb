@@ -8,7 +8,7 @@
     <parent>
         <groupId>oap</groupId>
         <artifactId>oap.maven</artifactId>
-        <version>17.3.0.8</version>
+        <version>17.3.4.0</version>
     </parent>
 
     <name>oap-stats-db-parent</name>
@@ -36,14 +36,12 @@
     </modules>
 
     <properties>
-        <oap-statsdb.project.version>17.5.4.7</oap-statsdb.project.version>
+        <oap-statsdb.project.version>17.5.4.8</oap-statsdb.project.version>
 
-        <oap.deps.oap.version>17.10.30.5</oap.deps.oap.version>
-        <oap.storage.version>17.9.12.1</oap.storage.version>
+        <oap.deps.oap.version>17.10.34.11</oap.deps.oap.version>
+        <oap.storage.version>17.9.14.2</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.24</oap.deps.lombok.version>
     </properties>
 
-    <dependencies>
-    </dependencies>
 </project>
