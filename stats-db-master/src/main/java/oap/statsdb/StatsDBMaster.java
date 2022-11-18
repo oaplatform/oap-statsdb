@@ -27,7 +27,6 @@ package oap.statsdb;
 import lombok.extern.slf4j.Slf4j;
 import oap.statsdb.RemoteStatsDB.Sync;
 import oap.util.Lists;
-import oap.util.MemoryMeter;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -47,8 +46,6 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
 
         db.putAll( storage.load( schema ) );
         init( db.values() );
-
-        var memoryMeter = MemoryMeter.get();
     }
 
     private void merge( String key, Node masterNode, Node rNode, List<List<String>> retList, int level ) {
