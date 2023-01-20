@@ -36,10 +36,10 @@
     </modules>
 
     <properties>
-        <oap-statsdb.project.version>17.5.4.12</oap-statsdb.project.version>
+        <oap-statsdb.project.version>17.5.4.13</oap-statsdb.project.version>
 
-        <oap.deps.oap.version>17.10.37.10</oap.deps.oap.version>
-        <oap.storage.version>17.9.14.5</oap.storage.version>
+        <oap.deps.oap.version>17.10.37.18</oap.deps.oap.version>
+        <oap.storage.version>17.9.16.10</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.24</oap.deps.lombok.version>
     </properties>
