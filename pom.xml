@@ -39,7 +39,7 @@
         <oap-statsdb.project.version>17.6.0.0</oap-statsdb.project.version>
 
         <oap.deps.oap.version>17.11.0.2</oap.deps.oap.version>
-        <oap.storage.version>17.10.0.0</oap.storage.version>
+        <oap.storage.version>17.10.1.0-replicate-events-reduced-442</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.24</oap.deps.lombok.version>
     </properties>
