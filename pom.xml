@@ -38,7 +38,7 @@
     <properties>
         <oap-statsdb.project.version>18.6.1.0</oap-statsdb.project.version>
 
-        <oap.deps.oap.version>18.11.3.0</oap.deps.oap.version>
+        <oap.deps.oap.version>18.11.3.0-oap_kernel_Fix_for_service_that_implements_collection_interface-1718</oap.deps.oap.version>
         <oap.storage.version>18.10.2.5</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.24</oap.deps.lombok.version>
