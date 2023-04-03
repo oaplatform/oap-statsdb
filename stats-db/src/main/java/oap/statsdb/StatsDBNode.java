@@ -89,10 +89,11 @@ public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
     @Override
     protected <V extends Node.Value<V>> void update( String[] keys, Consumer<V> update ) {
         nodes.compute( new NodeId( keys ), ( nid, n ) -> {
-            if( n == null ) n = new Node( schema.get( keys.length - 1 ).newInstance() );
-            n.updateValue( update );
+            Node newNode = n;
+            if( newNode == null ) newNode = new Node( schema.get( keys.length - 1 ).newInstance() );
+            newNode.updateValue( update );
 
-            return n;
+            return newNode;
         } );
     }
 

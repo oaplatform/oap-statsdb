@@ -69,13 +69,14 @@ public abstract class StatsDB extends IStatsDB {
         var rootKey = key[0];
 
         db.compute( rootKey, ( k, n ) -> {
-            if( n == null ) {
-                n = new Node( schema.get( 0 ).newInstance() );
+            Node newNode = n;
+            if( newNode == null ) {
+                newNode = new Node( schema.get( 0 ).newInstance() );
             }
 
-            updateNode( key, update, n, schema );
+            updateNode( key, update, newNode, schema );
 
-            return n;
+            return newNode;
         } );
     }
 
@@ -138,8 +139,10 @@ public abstract class StatsDB extends IStatsDB {
         return _children( key, position + 1, node.db.get( key[position] ) );
     }
 
-    public <N extends Node, V extends Node.Value<V>> N updateNode(
-        String[] key, Consumer<V> update, N node, NodeSchema schema ) {
+    public <N extends Node, V extends Node.Value<V>> N updateNode( String[] key,
+                                                                   Consumer<V> update,
+                                                                   N node,
+                                                                   NodeSchema schema ) {
         Node tNode = node;
 
         for( int i = 1; i < key.length; i++ ) {
