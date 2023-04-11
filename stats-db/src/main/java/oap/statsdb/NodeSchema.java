@@ -27,18 +27,21 @@ package oap.statsdb;
 import lombok.SneakyThrows;
 import lombok.ToString;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 
 @ToString( callSuper = true )
 public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1625813602788861879L;
 
-    private final HashMap<String, Class<? extends Node.Value>> cons = new HashMap<>();
+    private final Map<String, Class<? extends Node.Value>> cons = new HashMap<>();
 
     public NodeSchema() {
     }

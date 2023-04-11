@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -102,7 +103,7 @@ public class StatsDBStorageMongo implements StatsDBStorage, Closeable {
                        Map<String, Node> db, ArrayList<WriteModel<MongoNode>> bulk ) {
         if( db.isEmpty() ) return 0;
 
-        assert index <= schema.size();
+        Objects.checkFromToIndex( 0, schema.size(), index );
 
         var count = new MutableInt();
 
