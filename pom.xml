@@ -35,7 +35,7 @@
     <properties>
         <oap-statsdb.project.version>18.7.0</oap-statsdb.project.version>
 
-        <oap.deps.oap.version>18.13.0</oap.deps.oap.version>
+        <oap.deps.oap.version>18.13.0.fix_io_retry_timeout.2052</oap.deps.oap.version>
         <oap.storage.version>18.10.5</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.30</oap.deps.lombok.version>
