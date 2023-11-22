@@ -36,7 +36,7 @@
         <oap-statsdb.project.version>21.0.0</oap-statsdb.project.version>
 
         <oap.deps.oap.version>21.0.0</oap.deps.oap.version>
-        <oap.storage.version>21.0.0.jdk21.3</oap.storage.version>
+        <oap.storage.version>21.0.1</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.30</oap.deps.lombok.version>
     </properties>
