@@ -31,7 +31,7 @@ import oap.http.server.nio.NioHttpServer;
 import oap.message.MessageHttpHandler;
 import oap.message.MessageSender;
 import oap.message.MessageSenderUtils;
-import oap.storage.mongo.memory.MongoFixture;
+import oap.storage.mongo.MongoFixture;
 import oap.testng.EnvFixture;
 import oap.testng.Fixtures;
 import oap.testng.SystemTimerFixture;

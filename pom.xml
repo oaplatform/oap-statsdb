@@ -5,7 +5,7 @@
     <parent>
         <groupId>oap</groupId>
         <artifactId>oap.maven</artifactId>
-        <version>18.3.7.5</version>
+        <version>21.0.0</version>
     </parent>
 
     <name>oap-stats-db-parent</name>
@@ -16,14 +16,14 @@
     <repositories>
         <repository>
             <id>oap</id>
-            <url>https://mvn.oaplatform.org</url>
+            <url>https://artifacts.oaplatform.org/repository/maven/</url>
         </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
             <id>oap</id>
-            <url>https://mvn.oaplatform.org/</url>
+            <url>https://artifacts.oaplatform.org/repository/maven/</url>
         </repository>
     </distributionManagement>
 
@@ -33,10 +33,10 @@
     </modules>
 
     <properties>
-        <oap-statsdb.project.version>18.7.0</oap-statsdb.project.version>
+        <oap-statsdb.project.version>21.0.0</oap-statsdb.project.version>
 
-        <oap.deps.oap.version>18.13.1</oap.deps.oap.version>
-        <oap.storage.version>18.10.5</oap.storage.version>
+        <oap.deps.oap.version>21.0.0</oap.deps.oap.version>
+        <oap.storage.version>21.0.1</oap.storage.version>
 
         <oap.deps.lombok.version>1.18.30</oap.deps.lombok.version>
     </properties>
