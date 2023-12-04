@@ -64,6 +64,7 @@ public class NodeSchema extends ArrayList<NodeSchema.NodeConfiguration> implemen
 
     @ToString
     public static class NodeConfiguration<T extends Node.Value> implements Serializable {
+        @Serial
         private static final long serialVersionUID = -2296344454378267699L;
 
         public final String key;

@@ -80,8 +80,8 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         return retList;
     }
 
-    private List<List<String>> merge( ArrayList<Sync.NodeIdNode> remoteDB ) {
-        assert remoteDB != null;
+    private List<List<String>> merge( List<Sync.NodeIdNode> remoteDB ) {
+        Objects.requireNonNull( remoteDB );
 
         var retList = new ArrayList<List<String>>();
 
@@ -97,7 +97,7 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
         return retList;
     }
 
-    private Map<String, Node> toTree( ArrayList<Sync.NodeIdNode> remoteDB ) {
+    private Map<String, Node> toTree( List<Sync.NodeIdNode> remoteDB ) {
         var ret = new HashMap<String, Node>();
 
         for( var nodeIdNode : remoteDB ) {
@@ -108,11 +108,11 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
             for( var i = 0; i < nodeId.size(); i++ ) {
                 var key = nodeId.get( i );
                 var finalI = i;
-                treeNode = ( treeNode != null ? treeNode.db
-                    : ret ).computeIfAbsent( key, k -> new Node( schema.get( finalI ).newInstance() ) );
+                treeNode = ( treeNode != null ? treeNode.db : ret )
+                        .computeIfAbsent( key, k -> new Node( schema.get( finalI ).newInstance() ) );
             }
 
-            treeNode.set( node );
+            if( treeNode != null ) treeNode.set( node );
         }
 
         return ret;
@@ -121,16 +121,17 @@ public class StatsDBMaster extends StatsDB implements Closeable, Runnable {
     @SuppressWarnings( "unchecked" )
     private void init( Collection<Node> nodes ) {
         nodes.forEach( node -> {
-            if( node.v instanceof Node.Container ) {
+            if( node.v instanceof Node.Container container ) {
                 init( node.db.values() );
-                ( ( Node.Container ) node.v ).aggregate( Lists.map( node.db.values(), b -> b.v ) );
+                container.aggregate( Lists.map( node.db.values(), b -> b.v ) );
             }
         } );
     }
 
     public boolean update( Sync sync, String host ) {
-        assert sync != null;
-        assert sync.data != null;
+        Objects.requireNonNull( sync );
+        Objects.requireNonNull( sync.data );
+        Objects.requireNonNull( host );
 
         synchronized( host.intern() ) {
             var failedKeys = merge( sync.data );

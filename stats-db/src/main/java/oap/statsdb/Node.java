@@ -40,7 +40,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 @EqualsAndHashCode
@@ -50,7 +52,7 @@ public class Node implements Serializable {
     @Serial
     private static final long serialVersionUID = 4194048067764234L;
 
-    public volatile ConcurrentHashMap<String, Node> db = new ConcurrentHashMap<>();
+    public volatile ConcurrentMap<String, Node> db = new ConcurrentHashMap<>();
     @JsonTypeIdResolver( TypeIdFactory.class )
     @JsonTypeInfo( use = JsonTypeInfo.Id.CUSTOM, property = "o:t" )
     public Value v;
@@ -72,7 +74,7 @@ public class Node implements Serializable {
         this.v = v;
     }
 
-    public void set( @Nonnull Node node ) {
+    public synchronized void set( @Nonnull Node node ) {
         Preconditions.checkNotNull( node );
 
         this.mt = node.mt;
@@ -82,7 +84,7 @@ public class Node implements Serializable {
 
     @SuppressWarnings( "unchecked" )
     synchronized <V extends Value<V>> void updateValue( Consumer<V> update ) {
-        assert v != null;
+        Objects.requireNonNull( v );
         update.accept( ( V ) v );
         this.mt = DateTimeUtils.currentTimeMillis();
     }
@@ -90,22 +92,17 @@ public class Node implements Serializable {
     @SuppressWarnings( "unchecked" )
     public <V extends Value<V>> V get( Iterator<String> key ) {
         Node obj = this;
-
         while( key.hasNext() ) {
             var item = key.next();
-
             if( obj == null ) return null;
-
             obj = obj.db.get( item );
         }
-
         if( obj == null ) return null;
-
         return ( V ) obj.v;
     }
 
     @SuppressWarnings( "unchecked" )
-    public boolean merge( Node node ) {
+    public synchronized boolean merge( Node node ) {
         mt = DateTimeUtils.currentTimeMillis();
         if( v == null ) v = node.v;
         else {
@@ -113,7 +110,6 @@ public class Node implements Serializable {
                 if( node.v != null ) v.merge( node.v );
             } catch( Throwable t ) {
                 log.error( t.getMessage(), t );
-
                 return false;
             }
         }

@@ -30,7 +30,7 @@ import lombok.ToString;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.List;
 
 public interface RemoteStatsDB {
     @ToString
@@ -38,17 +38,17 @@ public interface RemoteStatsDB {
         @Serial
         private static final long serialVersionUID = 6835215675536753051L;
 
-        public final ArrayList<NodeIdNode> data;
+        public final List<NodeIdNode> data;
         public final String id;
 
         @JsonCreator
-        public Sync( ArrayList<NodeIdNode> data, String id ) {
+        public Sync( List<NodeIdNode> data, String id ) {
             this.data = data;
             this.id = id;
         }
 
         @JsonIgnore
-        public final boolean isEmpty() {
+        public boolean isEmpty() {
             return data.isEmpty();
         }
 

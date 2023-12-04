@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -40,7 +41,7 @@ import static java.util.stream.Collectors.toList;
 @SuppressWarnings( "checkstyle:AbstractClassName" )
 public abstract class StatsDB extends IStatsDB {
     protected final NodeSchema schema;
-    protected volatile ConcurrentHashMap<String, Node> db = new ConcurrentHashMap<>();
+    protected volatile ConcurrentMap<String, Node> db = new ConcurrentHashMap<>();
 
     public StatsDB( NodeSchema schema ) {
         this.schema = schema;
@@ -53,8 +54,8 @@ public abstract class StatsDB extends IStatsDB {
         }
 
         var value = mnode.v;
-        if( value instanceof Node.Container ) {
-            ( ( Node.Container ) value ).aggregate( mnode.db.values().stream()
+        if( value instanceof Node.Container container ) {
+            container.aggregate( mnode.db.values().stream()
                 .map( n -> n.v )
                 .filter( Objects::nonNull )
                 .collect( toList() )
@@ -63,7 +64,7 @@ public abstract class StatsDB extends IStatsDB {
     }
 
     protected <V extends Node.Value<V>> void update( String[] key, Consumer<V> update ) {
-        assert key != null;
+        Objects.requireNonNull( key );
         assert key.length > 0;
 
         var rootKey = key[0];

@@ -64,7 +64,7 @@ public class StatsDBTest extends Fixtures {
     private static final MongoFixture MONGO_FIXTURE = new MongoFixture();
     private final EnvFixture envFixture;
 
-    {
+    public StatsDBTest() {
         envFixture = new EnvFixture();
 
         fixture( MONGO_FIXTURE );

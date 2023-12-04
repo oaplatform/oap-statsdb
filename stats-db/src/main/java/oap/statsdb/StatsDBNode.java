@@ -30,16 +30,18 @@ import oap.util.Cuid;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 @Slf4j
-public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
-    public final ConcurrentHashMap<NodeId, Node> nodes = new ConcurrentHashMap<>();
+public class StatsDBNode extends IStatsDB implements Runnable, Closeable, AutoCloseable {
+    public final ConcurrentMap<NodeId, Node> nodes = new ConcurrentHashMap<>();
     protected final NodeSchema schema;
     private final StatsDBTransport transport;
     private final Cuid timestamp;
-    protected boolean lastSyncSuccess = false;
+    protected volatile boolean lastSyncSuccess = false;
 
     public StatsDBNode( NodeSchema schema, StatsDBTransport transport ) {
         this( schema, transport, Cuid.UNIQUE );
@@ -62,11 +64,11 @@ public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
             lastSyncSuccess = true;
         } catch( Exception e ) {
             lastSyncSuccess = false;
-            log.error( e.getMessage(), e );
+            log.error( "Cannot perform sync operation", e );
         }
     }
 
-    private ArrayList<Sync.NodeIdNode> snapshot() {
+    private List<Sync.NodeIdNode> snapshot() {
         var ret = new ArrayList<Sync.NodeIdNode>();
         for( var entry : new ArrayList<>( nodes.entrySet() ) ) {
             ret.add( new Sync.NodeIdNode( entry.getKey(), entry.getValue() ) );
@@ -106,7 +108,6 @@ public class StatsDBNode extends IStatsDB implements Runnable, Closeable {
 
     @Override
     public void close() {
-        log.info( "close" );
         sync();
     }
 }
