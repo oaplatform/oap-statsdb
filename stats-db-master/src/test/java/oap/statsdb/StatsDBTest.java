@@ -229,7 +229,7 @@ public class StatsDBTest extends Fixtures {
 
         var uid = Cuid.incremental( 0 );
         try( var master = new StatsDBMaster( schema2, StatsDBStorage.NULL );
-             var server = new NioHttpServer( port );
+             var server = new NioHttpServer( new NioHttpServer.DefaultPort( port ) );
              var messageHttpHandler = new MessageHttpHandler( server, "/messages", controlStatePath, List.of( new StatsDBMessageListener( master ) ), -1 );
              var client = new MessageSender( "localhost", port, "/messages", TestDirectoryFixture.testPath( "msend" ), -1 );
              var node = new StatsDBNode( schema2, new StatsDBTransportMessage( client ), uid ) ) {
