@@ -28,12 +28,12 @@
         <dependency>
             <groupId>oap</groupId>
             <artifactId>oap-storage-mongo</artifactId>
-            <version>${oap.storage.version}</version>
+            <version>${oap.deps.oap.version}</version>
         </dependency>
         <dependency>
             <groupId>oap</groupId>
             <artifactId>oap-storage-mongo-test</artifactId>
-            <version>${oap.storage.version}</version>
+            <version>${oap.deps.oap.version}</version>
             <scope>test</scope>
         </dependency>
 
